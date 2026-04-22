@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">Kolejnosc event loop</title>
+  <desc id="desc">Diagram pokazujacy kolejnosc wykonywania sync code, microtask queue i macrotask queue.</desc>
+  <rect width="1200" height="720" fill="#081321" />
+  <rect x="44" y="44" width="1112" height="632" rx="40" fill="#102039" stroke="#29476f" stroke-width="4" />
+
+  <text x="88" y="112" fill="#f4b35d" font-family="Segoe UI, Arial, sans-serif" font-size="34" font-weight="700">
+    Execution Order
+  </text>
+
+  <line x1="130" y1="360" x2="1070" y2="360" stroke="#3e5d86" stroke-width="10" stroke-linecap="round" />
+
+  <circle cx="260" cy="360" r="86" fill="#f4b35d" />
+  <text x="210" y="352" fill="#0d1729" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="700">
+    1. Sync
+  </text>
+  <text x="204" y="388" fill="#0d1729" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700">
+    call stack
+  </text>
+
+  <circle cx="600" cy="360" r="86" fill="#6dd3ce" />
+  <text x="522" y="352" fill="#0d1729" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="700">
+    2. Microtasks
+  </text>
+  <text x="541" y="388" fill="#0d1729" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700">
+    Promises
+  </text>
+
+  <circle cx="940" cy="360" r="86" fill="#ffde95" />
+  <text x="873" y="352" fill="#0d1729" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="700">
+    3. Tasks
+  </text>
+  <text x="854" y="388" fill="#0d1729" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700">
+    setTimeout
+  </text>
+
+  <path d="M352 360H482" stroke="#f4b35d" stroke-width="8" stroke-linecap="round" />
+  <polygon points="482,360 456,344 456,376" fill="#f4b35d" />
+
+  <path d="M692 360H822" stroke="#6dd3ce" stroke-width="8" stroke-linecap="round" />
+  <polygon points="822,360 796,344 796,376" fill="#6dd3ce" />
+
+  <text x="102" y="576" fill="#b8c4da" font-family="Segoe UI, Arial, sans-serif" font-size="24">
+    Po kazdym tasku przegladarka oproznia microtask queue zanim przejdzie dalej.
+  </text>
+
+  <text x="102" y="616" fill="#b8c4da" font-family="Segoe UI, Arial, sans-serif" font-size="24">
+    To dlatego Promise.then wykonuje sie przed callbackiem z setTimeout.
+  </text>
+</svg>

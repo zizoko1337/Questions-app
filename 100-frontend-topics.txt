@@ -1,0 +1,115 @@
+javascript
+- execution context i call stack
+- hoisting
+- scope: global, function, block i lexical scope
+- closures
+- this i binding kontekstu
+- call, apply i bind
+- prototype chain
+- Promise
+- async/await
+- event loop
+- microtaski vs macrotaski
+- error handling synchroniczne vs asynchroniczne
+- shallow copy vs deep copy
+- AbortController
+- type coercion i porownania `==` vs `===`
+- immutability w JavaScript
+- event bubbling, capturing i event delegation
+- debounce vs throttle
+- moduly ESM
+- dynamic import
+- tree shaking i side effects
+- IntersectionObserver / ResizeObserver
+- Map, Set, WeakMap i WeakSet
+- memory leaks w JavaScript
+
+typescript
+- type inference
+- any, unknown i never
+- union types i intersection types
+- type narrowing
+- interfaces vs type aliases
+- generics
+- utility types
+- extends, implements i generic constraints
+- type assertions, const assertions i satisfies
+- tsconfig strict mode i najwazniejsze opcje
+
+react
+- rendering i reconciliation
+- useEffect
+- keys w listach
+
+vue
+- system reaktywnosci Vue
+- ref vs reactive
+- computed vs watch
+- watchEffect
+- composables
+- script setup
+- defineProps i defineEmits
+- defineExpose
+- props, emits i komunikacja miedzy komponentami
+- sloty i scoped slots
+- provide/inject
+- lifecycle hooks w Vue
+- template syntax i dyrektywy
+- conditional rendering i list rendering
+- v-model i custom v-model
+- nextTick
+- async components
+- keep-alive
+- Vue Router
+- navigation guards w Vue Router
+- Pinia
+- Nuxt basics
+- hydration mismatch
+
+html
+- semantic HTML
+- button vs link vs div
+- formularze: label, fieldset i legend
+- responsive images: srcset, sizes i picture
+- input types, autocomplete i accessibility formularzy
+- ARIA: kiedy pomaga, a kiedy szkodzi
+- alt text, figure, figcaption i semantyka mediow
+- script async vs defer
+
+css
+- cascade, specificity i inheritance
+- box model
+- display, document flow i formatting context
+- position, z-index i stacking context
+- flexbox
+- grid
+- responsive design: media queries i container queries
+- CSS custom properties
+- reflow vs repaint vs compositing
+- transforms, transitions, animations i performance
+
+architecture
+- browser rendering pipeline: DOM, CSSOM, layout, paint, composite
+- CDN
+- CSR vs SSR vs SSG vs ISR
+- code splitting
+- lazy loading assetow i widokow
+- HTTP caching, cache-control i ETag
+- Core Web Vitals
+- feature-based architecture frontendu
+- DNS, TLS handshake i skad bierze sie latency
+- design system i component library
+- server state vs client state
+- load balancer / reverse proxy
+- API communication patterns: REST vs GraphQL vs RPC
+- optimistic UI, retries i fallbacki
+
+other
+- HTTP basics: metody, status codes i headers
+- CORS i preflight
+- cookies, localStorage, sessionStorage i IndexedDB
+- auth w SPA
+- same-origin policy
+- WebSocket vs SSE vs polling
+- XSS, CSRF i CSP
+- testy: unit, integration i e2e

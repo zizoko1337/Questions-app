@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">Diagram event loop</title>
+  <desc id="desc">Schemat pokazujacy call stack, web APIs, microtask queue, task queue i renderowanie.</desc>
+  <rect width="1200" height="720" fill="#081321" />
+  <rect x="52" y="52" width="1096" height="616" rx="36" fill="#102039" stroke="#29476f" stroke-width="4" />
+  <text x="76" y="110" fill="#f4b35d" font-family="Segoe UI, Arial, sans-serif" font-size="34" font-weight="700">
+    Browser Event Loop
+  </text>
+
+  <rect x="86" y="160" width="264" height="360" rx="24" fill="#142845" stroke="#6dd3ce" stroke-width="3" />
+  <text x="118" y="208" fill="#f6f2e8" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="700">
+    Call Stack
+  </text>
+  <rect x="118" y="244" width="200" height="56" rx="14" fill="#f4b35d" />
+  <text x="152" y="280" fill="#0d1729" font-family="Segoe UI, Arial, sans-serif" font-size="26" font-weight="700">
+    sync code
+  </text>
+  <rect x="118" y="318" width="200" height="56" rx="14" fill="#ffde95" />
+  <text x="153" y="354" fill="#0d1729" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700">
+    render work
+  </text>
+
+  <rect x="390" y="160" width="324" height="150" rx="24" fill="#142845" stroke="#6dd3ce" stroke-width="3" />
+  <text x="422" y="208" fill="#f6f2e8" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="700">
+    Web APIs
+  </text>
+  <text x="422" y="258" fill="#b8c4da" font-family="Segoe UI, Arial, sans-serif" font-size="24">
+    setTimeout
+  </text>
+  <text x="422" y="292" fill="#b8c4da" font-family="Segoe UI, Arial, sans-serif" font-size="24">
+    fetch / DOM events
+  </text>
+
+  <rect x="390" y="350" width="324" height="150" rx="24" fill="#142845" stroke="#f4b35d" stroke-width="3" />
+  <text x="422" y="398" fill="#f6f2e8" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="700">
+    Microtask Queue
+  </text>
+  <text x="422" y="448" fill="#b8c4da" font-family="Segoe UI, Arial, sans-serif" font-size="24">
+    Promise.then
+  </text>
+  <text x="422" y="482" fill="#b8c4da" font-family="Segoe UI, Arial, sans-serif" font-size="24">
+    queueMicrotask
+  </text>
+
+  <rect x="754" y="160" width="324" height="150" rx="24" fill="#142845" stroke="#f4b35d" stroke-width="3" />
+  <text x="786" y="208" fill="#f6f2e8" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="700">
+    Task Queue
+  </text>
+  <text x="786" y="258" fill="#b8c4da" font-family="Segoe UI, Arial, sans-serif" font-size="24">
+    setTimeout callback
+  </text>
+  <text x="786" y="292" fill="#b8c4da" font-family="Segoe UI, Arial, sans-serif" font-size="24">
+    message / IO
+  </text>
+
+  <rect x="754" y="350" width="324" height="150" rx="24" fill="#142845" stroke="#6dd3ce" stroke-width="3" />
+  <text x="786" y="398" fill="#f6f2e8" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="700">
+    Render
+  </text>
+  <text x="786" y="448" fill="#b8c4da" font-family="Segoe UI, Arial, sans-serif" font-size="24">
+    paint after tasks
+  </text>
+
+  <path d="M350 282H390" stroke="#6dd3ce" stroke-width="6" stroke-linecap="round" />
+  <polygon points="390,282 372,270 372,294" fill="#6dd3ce" />
+
+  <path d="M552 310V350" stroke="#f4b35d" stroke-width="6" stroke-linecap="round" />
+  <polygon points="552,350 540,332 564,332" fill="#f4b35d" />
+
+  <path d="M714 425H754" stroke="#f4b35d" stroke-width="6" stroke-linecap="round" />
+  <polygon points="754,425 736,413 736,437" fill="#f4b35d" />
+
+  <path d="M916 310V350" stroke="#6dd3ce" stroke-width="6" stroke-linecap="round" />
+  <polygon points="916,350 904,332 928,332" fill="#6dd3ce" />
+
+  <text x="92" y="598" fill="#b8c4da" font-family="Segoe UI, Arial, sans-serif" font-size="24">
+    Zasada: najpierw stos wywolan, potem microtaski, dopiero potem kolejny task.
+  </text>
+</svg>

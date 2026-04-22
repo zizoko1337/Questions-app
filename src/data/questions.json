@@ -1,0 +1,1516 @@
+[
+  {
+    "id": "event-loop-browser",
+    "name": "Jak dziala event loop w przegladarce?",
+    "description": "## Co powiedziec na rozmowie\n\nEvent loop odpowiada za koordynacje **call stacka**, kolejek zadan i renderowania.\n\n- kod synchroniczny wykonuje sie najpierw\n- potem silnik sprawdza `microtask queue`, np. `Promise.then`\n- dopiero pozniej wpadaja kolejne `macrotaski`, np. `setTimeout`\n\n```js\nconsole.log('A');\nsetTimeout(() => console.log('B'));\nPromise.resolve().then(() => console.log('C'));\nconsole.log('D');\n```\n\nPrawidlowa kolejnosc to `A D C B`.",
+    "categories": ["javascript"],
+    "images": [
+      {
+        "src": "/images/event-loop-diagram.svg",
+        "alt": "Schemat call stacka oraz kolejek microtask i macrotask"
+      },
+      {
+        "src": "/images/event-loop-order.svg",
+        "alt": "Kolejnosc wykonania: sync code, microtaski, potem macrotaski"
+      }
+    ],
+    "links": [
+      {
+        "label": "MDN: Event loop",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Event_loop"
+      },
+      {
+        "label": "Jake Archibald: Tasks, microtasks, queues and schedules",
+        "href": "https://jakearchibald.com/2015/tasks-microtasks-queues-and-schedules/"
+      }
+    ]
+  },
+  {
+    "id": "execution-context-call-stack",
+    "name": "Czym jest execution context i call stack w JavaScript?",
+    "description": "Execution context to zestaw informacji, ktorych silnik potrzebuje, zeby wykonac aktualny kod. Gdy wywolujesz funkcje, dostaje ona wlasny context i trafia na call stack, a po zakonczeniu spada ze stosu.\n\n### Najwazniejsze punkty\n- kod startuje od global execution context\n- kazde wywolanie funkcji doklada nowa ramke na stos\n- zbyt gleboka rekurencja albo lancuch wywolan konczy sie `stack overflow`\n\n### Na rozmowie\nPowiedz, ze call stack wyjasnia kolejnosc wywolan funkcji i jest baza do zrozumienia event loop.",
+    "categories": ["javascript"],
+    "images": [
+      {
+        "src": "/images/execution-context-call-stack-codexremind.webp",
+        "alt": "Schemat global execution context oraz kolejnych ramek dodawanych na call stack"
+      }
+    ],
+    "links": [
+      {
+        "label": "MDN: JavaScript execution model",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Execution_model"
+      }
+    ]
+  },
+  {
+    "id": "hoisting",
+    "name": "Czym jest hoisting w JavaScript?",
+    "description": "Hoisting to efekt tego, ze JavaScript przygotowuje deklaracje przed wykonaniem kodu. `function declaration` jest dostepna od razu, `var` istnieje od poczatku scope i ma poczatkowo `undefined`, a `let` i `const` trafiaja do TDZ, wiec przed deklaracja rzucaja blad.\n\n### Najwazniejsze punkty\n- hoisting dotyczy deklaracji, nie pelnej inicjalizacji\n- `function declaration` zachowuje sie inaczej niz `function expression`\n- warto odroznic hoisting od TDZ\n\n### Na rozmowie\nPowiedz, ze hoisting wynika z tworzenia execution context, a nie z fizycznego przenoszenia kodu.",
+    "categories": ["javascript"],
+    "images": [],
+    "links": [
+      {
+        "label": "MDN: Hoisting",
+        "href": "https://developer.mozilla.org/en-US/docs/Glossary/Hoisting"
+      }
+    ]
+  },
+  {
+    "id": "scope-lexical-scope",
+    "name": "Czym jest scope i lexical scope w JavaScript?",
+    "description": "Scope okresla, z jakiego miejsca w kodzie dana zmienna jest widoczna. W JavaScript masz m.in. scope globalny, funkcyjny i blokowy, a funkcje korzystaja z lexical scope, czyli patrza tam, gdzie zostaly zdefiniowane, a nie skad sa wywolane.\n\n### Najwazniejsze punkty\n- `var` jest funkcyjny, a `let` i `const` sa blokowe\n- wewnetrzny scope widzi zewnetrzny, ale nie odwrotnie\n- lexical scope tlumaczy, skad biora sie closures\n\n### Na rozmowie\nPowiedz, ze scope odpowiada za widocznosc zmiennych, a lexical scope za to, z jakiego otoczenia funkcja czyta dane.",
+    "categories": ["javascript"],
+    "images": [],
+    "links": [
+      {
+        "label": "MDN: Scope",
+        "href": "https://developer.mozilla.org/en-US/docs/Glossary/Scope"
+      }
+    ]
+  },
+  {
+    "id": "closures",
+    "name": "Czym sa closures w JavaScript?",
+    "description": "Closure to funkcja, ktora pamieta swoje zewnetrzne otoczenie z momentu definicji. Dzieki temu moze korzystac ze zmiennych z parent scope nawet wtedy, gdy zewnetrzna funkcja juz sie wykonala.\n\n### Najwazniejsze punkty\n- closure wynika bezposrednio z lexical scope\n- czesto wystepuje w callbackach, factory functions i prywatnym stanie\n- problemem bywa nie sam closure, tylko trzymanie zbednych referencji za dlugo\n\n### Na rozmowie\nPowiedz, ze closure to nie osobny mechanizm obok scope, tylko praktyczny efekt lexical scope.",
+    "categories": ["javascript"],
+    "images": [],
+    "links": [
+      {
+        "label": "MDN: Closures",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures"
+      }
+    ]
+  },
+  {
+    "id": "this-keyword",
+    "name": "Jak dziala this w JavaScript?",
+    "description": "Wartosc `this` zalezy glownie od sposobu wywolania funkcji, a nie od miejsca jej napisania. W zwyklej funkcji `obj.method()` ustawia `this` na `obj`, a arrow function nie ma wlasnego `this` i dziedziczy je z otoczenia.\n\n### Najwazniejsze punkty\n- `this` mozna jawnie ustawic przez `call`, `apply` albo `bind`\n- w strict mode samodzielne wywolanie funkcji daje zwykle `undefined`\n- arrow function dobrze nadaje sie tam, gdzie chcesz zachowac zewnetrzny kontekst\n\n### Na rozmowie\nNajlepiej powiedziec, ze `this` jest zwiazane z wywolaniem funkcji, a arrow function zachowuje sie tu inaczej niz zwykla funkcja.",
+    "categories": ["javascript"],
+    "images": [],
+    "links": [
+      {
+        "label": "MDN: this",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this"
+      }
+    ]
+  },
+  {
+    "id": "call-apply-bind",
+    "name": "Czym roznia sie call, apply i bind?",
+    "description": "`call` i `apply` uruchamiaja funkcje od razu z jawnie ustawionym `this`, a `bind` zwraca nowa funkcje z przypietym kontekstem. Najwazniejsza roznica miedzy `call` i `apply` to sposob przekazywania argumentow: `call` bierze je osobno, a `apply` jako tablice lub array-like.\n\n### Najwazniejsze punkty\n- `bind` jest przydatny, gdy chcesz przekazac gotowa funkcje dalej\n- `call` i `apply` sa dobre do jednorazowego wywolania\n- w nowym kodzie `apply` czesto zastepuje spread, np. `fn(...args)`\n\n### Na rozmowie\nPowiedz, ze cala trojka sluzy do kontroli `this`, ale tylko `bind` nie wykonuje funkcji od razu.",
+    "categories": ["javascript"],
+    "images": [],
+    "links": [
+      {
+        "label": "MDN: Function.prototype.call()",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/call"
+      },
+      {
+        "label": "MDN: Function.prototype.apply()",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/apply"
+      },
+      {
+        "label": "MDN: Function.prototype.bind()",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind"
+      }
+    ]
+  },
+  {
+    "id": "prototype-chain",
+    "name": "Czym jest prototype chain w JavaScript?",
+    "description": "JavaScript dziedziczy przez obiekty i prototypy, a nie przez klasy w klasycznym sensie. Gdy szukasz wlasciwosci na obiekcie, silnik sprawdza najpierw ten obiekt, a potem idzie wyzej po prototype chain, az znajdzie wartosc albo dojdzie do `null`.\n\n### Najwazniejsze punkty\n- `class` w JavaScript to nadal skladnia oparta o prototypy\n- metody wspoldzielone zwykle siedza na prototypie, a nie na kazdej instancji osobno\n- zrozumienie chain pomaga tlumaczyc dziedziczenie i `hasOwnProperty`\n\n### Na rozmowie\nPowiedz, ze obiekt moze korzystac z wlasciwosci, ktorych sam nie ma, bo sa znalezione wyzej w prototype chain.",
+    "categories": ["javascript"],
+    "images": [
+      {
+        "src": "/images/prototype-chain-codexremind.webp",
+        "alt": "Schemat obiektu, jego prototypu i kolejnych poziomow prototype chain az do null"
+      }
+    ],
+    "links": [
+      {
+        "label": "MDN: Inheritance and the prototype chain",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Inheritance_and_the_prototype_chain"
+      }
+    ]
+  },
+  {
+    "id": "promise-basics",
+    "name": "Czym jest Promise w JavaScript?",
+    "description": "Promise reprezentuje przyszly wynik operacji asynchronicznej. Zamiast czekac blokujaco na wynik, podpinasz obsluge sukcesu i bledu przez `then`, `catch` i `finally`.\n\n### Najwazniejsze punkty\n- Promise ma stany `pending`, `fulfilled` i `rejected`\n- Promise pomaga unikac gleboko zagniezdzonych callbackow\n- `Promise.all` jest czesto pytane, bo sluzy do odpalania kilku rzeczy rownolegle\n\n### Na rozmowie\nPowiedz, ze Promise nie wykonuje sie pozniej sam z siebie, tylko jest opakowaniem na wynik, ktory pojawi sie pozniej.",
+    "categories": ["javascript"],
+    "images": [],
+    "links": [
+      {
+        "label": "MDN: Using promises",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Using_promises"
+      },
+      {
+        "label": "MDN: Promise",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise"
+      }
+    ]
+  },
+  {
+    "id": "async-await",
+    "name": "Jak dzialaja async i await w JavaScript?",
+    "description": "`async/await` to wygodniejszy zapis pracy z Promise. Funkcja `async` zawsze zwraca Promise, a `await` wstrzymuje wykonanie tej funkcji do czasu rozstrzygniecia obietnicy, ale nie blokuje calego watku.\n\n### Najwazniejsze punkty\n- `await` dziala tylko w `async function` albo na top-levelu modulu\n- bledy obsluguje sie najczesciej przez `try/catch`\n- `await` w petli moze niepotrzebnie serializowac operacje, wiec czasem lepsze jest `Promise.all`\n\n### Na rozmowie\nPowiedz, ze `async/await` poprawia czytelnosc, ale pod spodem nadal opiera sie o Promise.",
+    "categories": ["javascript"],
+    "images": [],
+    "links": [
+      {
+        "label": "MDN: async function",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function"
+      },
+      {
+        "label": "MDN: await",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await"
+      }
+    ]
+  },
+  {
+    "id": "type-coercion-equality",
+    "name": "Na czym polega type coercion i kiedy uzywac == vs ===?",
+    "description": "Type coercion to automatyczna konwersja typow wykonywana przez JavaScript w okreslonych sytuacjach. W praktyce na rozmowie najbezpieczniej powiedziec, ze domyslnie uzywasz `===`, bo `==` potrafi dac zaskakujace wyniki, np. `0 == false` albo `'' == 0`.\n\n### Najwazniejsze punkty\n- `===` nie robi niejawnej konwersji typow\n- `==` ma swoje reguly i nie jest losowe, ale jest trudniejsze do czytania\n- `Object.is()` zachowuje sie jeszcze troche inaczej dla `NaN` i `-0`\n\n### Na rozmowie\nPowiedz, ze rozumiesz coercion, ale w kodzie aplikacyjnym zwykle wybierasz `===` dla przewidywalnosci.",
+    "categories": ["javascript"],
+    "images": [],
+    "links": [
+      {
+        "label": "MDN: Equality comparisons and sameness",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Equality_comparisons_and_sameness"
+      }
+    ]
+  },
+  {
+    "id": "microtasks-vs-macrotasks",
+    "name": "Czym roznia sie microtaski od macrotaskow?",
+    "description": "Microtaski maja wyzszy priorytet i sa oprozniane przed przejsciem do kolejnego macrotaska. Dlatego `Promise.then` zwykle wykona sie przed callbackiem z `setTimeout`, nawet jesli timeout ma `0`.\n\n### Najwazniejsze punkty\n- microtaski pochodza np. z `Promise.then` i `queueMicrotask`\n- macrotaski to np. `setTimeout`, `setInterval` i zdarzenia DOM\n- zbyt duzo microtaskow moze opoznic render i kolejne taski\n\n### Na rozmowie\nPowiedz, ze ta roznica tlumaczy kolejnosc wykonywania async kodu w przegladarce.",
+    "categories": ["javascript"],
+    "images": [
+      {
+        "src": "/images/microtasks-vs-macrotasks-codexremind.webp",
+        "alt": "Schemat pokazujacy call stack, microtask queue i task queue oraz ich kolejnosc obslugi"
+      }
+    ],
+    "links": [
+      {
+        "label": "MDN: JavaScript execution model",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Execution_model"
+      },
+      {
+        "label": "Jake Archibald: Tasks, microtasks, queues and schedules",
+        "href": "https://jakearchibald.com/2015/tasks-microtasks-queues-and-schedules/"
+      }
+    ]
+  },
+  {
+    "id": "sync-vs-async-error-handling",
+    "name": "Jak rozni sie error handling synchroniczny od asynchronicznego?",
+    "description": "W kodzie synchronicznym blad lapiesz zwykle przez `try/catch`. W kodzie asynchronicznym przy Promise obsluga idzie przez `catch`, a przy `async/await` znowu mozesz uzyc `try/catch`, ale musisz pamietac, ze nie kazdy blad z async przeplywu trafi do lokalnego bloku automatycznie.\n\n### Najwazniejsze punkty\n- `throw` w zwyklej funkcji przerywa aktualne wykonanie od razu\n- odrzucony Promise trzeba obsluzyc, inaczej masz `unhandled rejection`\n- `try/catch` dziala z `await`, ale nie z kodem odpalonym pozniej poza tym przeplywem\n\n### Na rozmowie\nPowiedz, ze najwazniejsze jest odroznienie bledu rzuconego teraz od bledu, ktory pojawia sie przy pozniejszym rozstrzygnieciu Promise.",
+    "categories": ["javascript"],
+    "images": [],
+    "links": [
+      {
+        "label": "MDN: Control flow and error handling",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Control_flow_and_error_handling"
+      },
+      {
+        "label": "MDN: Using promises",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Using_promises"
+      }
+    ]
+  },
+  {
+    "id": "shallow-copy-vs-deep-copy",
+    "name": "Czym rozni sie shallow copy od deep copy?",
+    "description": "Shallow copy kopiuje tylko pierwszy poziom obiektu, wiec zagniezdzone referencje nadal wskazuja na te same dane. Deep copy tworzy niezalezna kopie calej struktury, dzieki czemu zmiana w kopii nie modyfikuje zrodla.\n\n### Najwazniejsze punkty\n- spread i `Object.assign()` tworza shallow copy\n- problem wychodzi glownie przy zagniezdzonych obiektach i tablicach\n- `structuredClone()` robi deep copy dla wielu typowych przypadkow, ale nie dla wszystkiego\n\n### Na rozmowie\nPowiedz, ze spread nie rozwiazuje problemu glebokiego kopiowania, tylko wygodnie kopiuje pierwszy poziom.",
+    "categories": ["javascript"],
+    "images": [
+      {
+        "src": "/images/shallow-vs-deep-copy-codexremind.webp",
+        "alt": "Porownanie shallow copy i deep copy na obiekcie z zagniezdzonymi referencjami"
+      }
+    ],
+    "links": [
+      {
+        "label": "MDN: Shallow copy",
+        "href": "https://developer.mozilla.org/en-US/docs/Glossary/Shallow_copy"
+      },
+      {
+        "label": "MDN: Deep copy",
+        "href": "https://developer.mozilla.org/en-US/docs/Glossary/Deep_copy"
+      },
+      {
+        "label": "MDN: structuredClone()",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/API/Window/structuredClone"
+      }
+    ]
+  },
+  {
+    "id": "abort-controller",
+    "name": "Do czego sluzy AbortController?",
+    "description": "AbortController pozwala anulowac operacje asynchroniczne, najczesciej request `fetch`. To przydaje sie np. przy zmianie widoku, szybkim wpisywaniu w searchu albo unikaniu race conditions po stronie UI.\n\n### Najwazniejsze punkty\n- tworzysz controller i przekazujesz `signal` do operacji\n- wywolanie `abort()` przerywa request i zwykle konczy sie bledem typu `AbortError`\n- samo ignorowanie starej odpowiedzi jest slabsze niz prawdziwe anulowanie requestu\n\n### Na rozmowie\nPowiedz, ze AbortController pomaga kontrolowac lifecycle requestow i ograniczac niepotrzebna prace po stronie aplikacji.",
+    "categories": ["javascript"],
+    "images": [],
+    "links": [
+      {
+        "label": "MDN: AbortController",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/API/AbortController"
+      }
+    ]
+  },
+  {
+    "id": "immutability-javascript",
+    "name": "Na czym polega immutability w JavaScript?",
+    "description": "Immutability oznacza, ze zamiast zmieniac istniejacy obiekt, tworzysz nowa wartosc z potrzebna zmiana. W JavaScript ma to znaczenie glownie przy porownywaniu referencji, przewidywalnosci stanu i unikaniu skutkow ubocznych.\n\n### Najwazniejsze punkty\n- prymitywy sa immutable, ale obiekty i tablice juz nie\n- `Object.freeze()` blokuje modyfikacje, ale dziala plytko\n- w aplikacjach frontendowych czesto chodzi bardziej o konwencje pracy na nowych referencjach niz o fizyczne zamrazanie kazdego obiektu\n\n### Na rozmowie\nPowiedz, ze immutability ulatwia wykrywanie zmian i zmniejsza ryzyko przypadkowej mutacji stanu.",
+    "categories": ["javascript"],
+    "images": [],
+    "links": [
+      {
+        "label": "MDN: Object.freeze()",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze"
+      }
+    ]
+  },
+  {
+    "id": "event-bubbling-capturing-delegation",
+    "name": "Jak dzialaja event bubbling, capturing i event delegation?",
+    "description": "Zdarzenie w DOM przechodzi przez faze capture, potem trafia w target i zwykle babelkuje w gore przez bubbling. Event delegation polega na podpieciu listenera wyzej i obsludze wielu elementow przez `event.target`, co upraszcza kod i zmniejsza liczbe listenerow.\n\n### Najwazniejsze punkty\n- bubbling jest domyslnym zachowaniem dla wielu eventow\n- capturing trzeba wlaczyc jawnie w `addEventListener`\n- delegation dobrze dziala dla list, tabel i dynamicznie dodawanych elementow\n\n### Na rozmowie\nPowiedz, ze delegation wykorzystuje propagacje zdarzen zamiast przypinania osobnego listenera do kazdego elementu.",
+    "categories": ["javascript"],
+    "images": [
+      {
+        "src": "/images/event-propagation-codexremind.webp",
+        "alt": "Schemat przejscia zdarzenia przez capture, target i bubbling oraz przyklad event delegation"
+      }
+    ],
+    "links": [
+      {
+        "label": "MDN: Event bubbling",
+        "href": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Scripting/Event_bubbling"
+      }
+    ]
+  },
+  {
+    "id": "debounce-vs-throttle",
+    "name": "Czym rozni sie debounce od throttle?",
+    "description": "Debounce czeka, az seria wywolan ucichnie, i dopiero wtedy odpala funkcje. Throttle ogranicza czestotliwosc wywolan, ale pozwala wykonywac je regularnie co okreslony czas.\n\n### Najwazniejsze punkty\n- debounce dobrze pasuje do search inputa i autocomplete\n- throttle sprawdza sie przy `scroll`, `resize` i ciaglych eventach UI\n- oba mechanizmy sa o kontroli kosztownych operacji, ale sluza do innych wzorcow ruchu\n\n### Na rozmowie\nPowiedz, ze debounce reaguje po przerwie, a throttle w trakcie ciaglego strumienia zdarzen.",
+    "categories": ["javascript"],
+    "images": [],
+    "links": [
+      {
+        "label": "MDN: Debounce",
+        "href": "https://developer.mozilla.org/en-US/docs/Glossary/Debounce"
+      },
+      {
+        "label": "MDN: Throttle",
+        "href": "https://developer.mozilla.org/en-US/docs/Glossary/Throttle"
+      }
+    ]
+  },
+  {
+    "id": "esm-modules",
+    "name": "Czym sa moduly ESM w JavaScript?",
+    "description": "ESM to natywny system modulow oparty o `import` i `export`. Dzieki statycznej strukturze importow bundler i runtime lepiej rozumieja zaleznosci, co pomaga m.in. w code splittingu i tree shakingu.\n\n### Najwazniejsze punkty\n- kazdy modul ma wlasny scope\n- importy sa statycznie analizowalne\n- ESM to dzis podstawowy model organizacji kodu frontendowego\n\n### Na rozmowie\nPowiedz, ze ESM porzadkuje zaleznosci i daje lepsze wsparcie narzedziowe niz starsze systemy modulow.",
+    "categories": ["javascript"],
+    "images": [],
+    "links": [
+      {
+        "label": "MDN: JavaScript modules",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules"
+      }
+    ]
+  },
+  {
+    "id": "dynamic-import",
+    "name": "Do czego sluzy dynamic import?",
+    "description": "Dynamic import pozwala doladowac modul dopiero wtedy, gdy jest potrzebny. To przydatne przy lazy loadingu widokow, ciezkich bibliotek albo funkcji rzadko uzywanych przez uzytkownika.\n\n### Najwazniejsze punkty\n- `import()` zwraca Promise\n- dynamic import zmniejsza koszt startowy aplikacji\n- trzeba go stosowac sensownie, bo zbyt duzo malych chunkow tez moze zaszkodzic\n\n### Na rozmowie\nPowiedz, ze to mechanizm laczacy ergonomie ESM z praktycznym code splittingiem.",
+    "categories": ["javascript"],
+    "images": [],
+    "links": [
+      {
+        "label": "MDN: import()",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Import"
+      },
+      {
+        "label": "MDN: JavaScript modules",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules"
+      }
+    ]
+  },
+  {
+    "id": "tree-shaking-side-effects",
+    "name": "Czym sa tree shaking i side effects?",
+    "description": "Tree shaking to usuwanie nieuzywanego kodu z bundla na podstawie grafu importow. Dziala najlepiej z ESM, ale moze zostac ograniczone przez side effects, czyli kod wykonywany przy samym imporcie modulu.\n\n### Najwazniejsze punkty\n- sam `import/export` nie gwarantuje jeszcze idealnego tree shakingu\n- bundler musi wiedziec, czy plik jest bezpieczny do wyciecia\n- nieostrozny kod wykonywany na poziomie modulu moze utrudnic optymalizacje\n\n### Na rozmowie\nPowiedz, ze tree shaking zalezy od statycznych importow i od tego, czy modul ma side effects.",
+    "categories": ["javascript"],
+    "images": [
+      {
+        "src": "/images/tree-shaking-side-effects-codexremind.webp",
+        "alt": "Schemat grafu modulow pokazujacy importy, martwy kod i plik z side effects blokujacy usuniecie czesci bundla"
+      }
+    ],
+    "links": [
+      {
+        "label": "MDN: JavaScript modules",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules"
+      },
+      {
+        "label": "webpack: Tree Shaking",
+        "href": "https://webpack.js.org/guides/tree-shaking/"
+      }
+    ]
+  },
+  {
+    "id": "intersectionobserver-resizeobserver",
+    "name": "Do czego sluza IntersectionObserver i ResizeObserver?",
+    "description": "To API do reagowania na zmiany bez ciaglego odpytywania albo recznego nasluchiwania kosztownych eventow. `IntersectionObserver` przydaje sie np. do lazy loadingu i infinite scrolla, a `ResizeObserver` do reagowania na zmiany rozmiaru elementu.\n\n### Najwazniejsze punkty\n- oba rozwiazania sa zwykle lepsze niz reczne sprawdzanie stanu w petli\n- `IntersectionObserver` operuje na widocznosci wzgledem viewportu albo root elementu\n- `ResizeObserver` reaguje na zmiany wymiarow elementu\n\n### Na rozmowie\nPowiedz, ze observery pomagaja pisac bardziej wydajny kod niz reczne polling albo nadmiarowe event listenery.",
+    "categories": ["javascript"],
+    "images": [],
+    "links": [
+      {
+        "label": "MDN: IntersectionObserver",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver"
+      },
+      {
+        "label": "MDN: ResizeObserver",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver"
+      }
+    ]
+  },
+  {
+    "id": "map-set-weakmap-weakset",
+    "name": "Kiedy uzywac Map, Set, WeakMap i WeakSet?",
+    "description": "`Map` trzyma pary klucz-wartosc i jest lepszy od zwyklego obiektu, gdy klucze nie sa tylko stringami albo chcesz zachowac insertion order. `Set` przechowuje unikalne wartosci, a `WeakMap` i `WeakSet` trzymaja slabe referencje do obiektow, dzieki czemu nie blokuja garbage collectora.\n\n### Najwazniejsze punkty\n- `Map` i `Set` sa iterowalne\n- `WeakMap` i `WeakSet` nie sa enumerowalne\n- weak kolekcje sa przydatne do metadata, cache i powiazan z obiektami DOM\n\n### Na rozmowie\nPowiedz, ze roznica miedzy zwyklymi i weak kolekcjami dotyczy glownie zarzadzania referencjami i GC.",
+    "categories": ["javascript"],
+    "images": [],
+    "links": [
+      {
+        "label": "MDN: Keyed collections",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Keyed_collections"
+      }
+    ]
+  },
+  {
+    "id": "memory-leaks-javascript",
+    "name": "Skad biora sie memory leaks w JavaScript?",
+    "description": "JavaScript ma garbage collector, ale to nie znaczy, ze wycieki pamieci nie istnieja. Problem pojawia sie wtedy, gdy przez zbedne referencje obiekty nadal sa osiagalne, np. przez listenery, timery, cache albo closures trzymajace duze struktury dluzej niz trzeba.\n\n### Najwazniejsze punkty\n- najczestszy problem to nieusuwane subskrypcje i listener'y\n- wyciek to zwykle efekt zlego lifecycle zarzadzania, a nie samego jezyka\n- WeakMap i WeakSet czasem pomagaja, ale nie zastapia poprawnego cleanupu\n\n### Na rozmowie\nPowiedz, ze GC usuwa tylko to, do czego nie ma juz referencji, wiec leak oznacza najczesciej, ze cos nadal niepotrzebnie trzyma obiekt przy zyciu.",
+    "categories": ["javascript"],
+    "images": [],
+    "links": [
+      {
+        "label": "MDN: Memory management",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Memory_management"
+      }
+    ]
+  },
+  {
+    "id": "typescript-type-inference",
+    "name": "Na czym polega type inference w TypeScript?",
+    "description": "Type inference oznacza, ze TypeScript potrafi sam wywnioskowac typ na podstawie kontekstu i przypisanej wartosci. Dzieki temu nie musisz wszedzie dopisywac adnotacji, ale nadal dostajesz podpowiedzi i sprawdzanie bledow.\n\n### Najwazniejsze punkty\n- inference dziala m.in. przy zmiennych, zwrotach funkcji i callbackach\n- czasem warto dopisac typ jawnie, gdy inference wychodzi za szerokie albo nieczytelne\n- dobra znajomosc inference jest wazna, bo wiele bledow TypeScript wychodzi wlasnie z tego, co zostalo wywnioskowane\n\n### Na rozmowie\nPowiedz, ze TypeScript nie wymaga typowania wszystkiego recznie, bo duza czesc informacji wyciaga z kodu sam.",
+    "categories": ["typescript"],
+    "images": [],
+    "links": [
+      {
+        "label": "TypeScript Docs: Type Inference",
+        "href": "https://www.typescriptlang.org/docs/handbook/type-inference"
+      }
+    ]
+  },
+  {
+    "id": "typescript-any-unknown-never",
+    "name": "Czym roznia sie any, unknown i never w TypeScript?",
+    "description": "`any` wylacza bezpieczenstwo typow dla danej wartosci, `unknown` wymusza sprawdzenie typu przed uzyciem, a `never` oznacza stan, ktory nie powinien wystapic. To trzy bardzo rozne narzedzia i na rozmowie warto pokazac, ze nie wrzucasz ich do jednego worka.\n\n### Najwazniejsze punkty\n- `any` jest wygodne, ale szybko psuje jakosc typowania\n- `unknown` jest bezpieczniejsze na granicach systemu, np. przy danych z API\n- `never` czesto pojawia sie przy exhaustive checkach i funkcjach, ktore zawsze rzucaja blad\n\n### Na rozmowie\nPowiedz, ze jesli nie znasz typu jeszcze teraz, to zwykle lepsze jest `unknown` niz `any`.",
+    "categories": ["typescript"],
+    "images": [],
+    "links": [
+      {
+        "label": "TypeScript Docs: Everyday Types",
+        "href": "https://www.typescriptlang.org/docs/handbook/2/everyday-types.html"
+      },
+      {
+        "label": "TypeScript Docs: Narrowing",
+        "href": "https://www.typescriptlang.org/docs/handbook/2/narrowing.html"
+      }
+    ]
+  },
+  {
+    "id": "typescript-union-intersection-types",
+    "name": "Czym sa union types i intersection types w TypeScript?",
+    "description": "Union type opisuje wartosc, ktora moze byc jednym z kilku typow, np. `string | number`. Intersection type laczy kilka typow naraz, wiec wynik musi spelniac wszystkie ich wymagania jednoczesnie.\n\n### Najwazniejsze punkty\n- union dobrze modeluje warianty i rozne stany danych\n- intersection dobrze sklada kilka kontraktow w jeden typ\n- przy union nie mozesz uzywac pol, ktorych nie ma we wszystkich wariantach, dopoki nie zrobisz narrowing\n\n### Na rozmowie\nPowiedz, ze union to alternatywa typu A albo B, a intersection to typ, ktory jest jednoczesnie A i B.",
+    "categories": ["typescript"],
+    "images": [],
+    "links": [
+      {
+        "label": "TypeScript Docs: Everyday Types",
+        "href": "https://www.typescriptlang.org/docs/handbook/2/everyday-types.html"
+      },
+      {
+        "label": "TypeScript Docs: Object Types",
+        "href": "https://www.typescriptlang.org/docs/handbook/2/objects.html"
+      }
+    ]
+  },
+  {
+    "id": "typescript-narrowing",
+    "name": "Czym jest type narrowing w TypeScript?",
+    "description": "Narrowing to zawezanie typu na podstawie warunkow w kodzie, np. `typeof`, `in`, `instanceof` albo wlasnych type guardow. To dzieki niemu TypeScript rozumie, ze po odpowiednim if-ie dana wartosc jest juz bardziej konkretna.\n\n### Najwazniejsze punkty\n- narrowing jest kluczowy przy union types\n- mozna go robic przez zwykle warunki runtime, nie tylko przez specjalne TS triki\n- dobry model danych czesto wykorzystuje discriminated unions i exhaustive checking\n\n### Na rozmowie\nPowiedz, ze narrowing laczy runtime checks z bezpieczniejszym typowaniem w kolejnych linijkach kodu.",
+    "categories": ["typescript"],
+    "images": [],
+    "links": [
+      {
+        "label": "TypeScript Docs: Narrowing",
+        "href": "https://www.typescriptlang.org/docs/handbook/2/narrowing.html"
+      }
+    ]
+  },
+  {
+    "id": "typescript-interfaces-vs-type-aliases",
+    "name": "Kiedy wybrac interface, a kiedy type alias?",
+    "description": "W wielu codziennych przypadkach `interface` i `type` sa bardzo podobne, bo oba opisuja ksztalt danych. Najprosciej zapamietac, ze `type` jest bardziej uniwersalny, bo nazwie tez uniony, tuple i inne konstrukcje, a `interface` dobrze pasuje do kontraktow obiektow i moze byc rozszerzany przez declaration merging.\n\n### Najwazniejsze punkty\n- `type` nadaje sie do wiekszej liczby form typow\n- `interface` jest naturalne przy API obiektow i klasach\n- w praktyce wazniejsza od dogmatu jest spojnosc w projekcie\n\n### Na rozmowie\nPowiedz, ze nie ma jednej swietej reguly, ale trzeba rozumiec realna roznice w mozliwosciach obu zapisow.",
+    "categories": ["typescript"],
+    "images": [],
+    "links": [
+      {
+        "label": "TypeScript Docs: Everyday Types",
+        "href": "https://www.typescriptlang.org/docs/handbook/2/everyday-types.html"
+      },
+      {
+        "label": "TypeScript Docs: Object Types",
+        "href": "https://www.typescriptlang.org/docs/handbook/2/objects.html"
+      }
+    ]
+  },
+  {
+    "id": "typescript-generics",
+    "name": "Do czego sluza generyki w TypeScript?",
+    "description": "Generyki pozwalaja pisac kod, ktory zachowuje informacje o typie bez przywiazywania sie do jednej konkretnej wartosci. Dzieki temu funkcja, typ albo komponent moga byc reuzywalne, a jednoczesnie dalej bezpieczne typowo.\n\n### Najwazniejsze punkty\n- zamiast `any` lepiej przekazac typ jako parametr, np. `<T>`\n- generyki sa bardzo czeste w helperach, hookach i bibliotekach UI\n- zbyt przekombinowane generyki tez sa problemem, bo pogarszaja czytelnosc i inference\n\n### Na rozmowie\nPowiedz, ze generyki pozwalaja zachowac zaleznosci miedzy typami wejscia i wyjscia bez utraty bezpieczenstwa.",
+    "categories": ["typescript"],
+    "images": [],
+    "links": [
+      {
+        "label": "TypeScript Docs: Generics",
+        "href": "https://www.typescriptlang.org/docs/handbook/2/generics.html"
+      }
+    ]
+  },
+  {
+    "id": "typescript-utility-types",
+    "name": "Po co sa utility types w TypeScript?",
+    "description": "Utility types to gotowe narzedzia do przeksztalcania istniejacych typow bez pisania ich od zera. W praktyce bardzo czesto uzywa sie `Partial`, `Pick`, `Omit`, `Record`, `Required` czy `Readonly`.\n\n### Najwazniejsze punkty\n- utility types przyspieszaja prace i zmniejszaja duplikacje\n- dobrze wspieraja formularze, DTO i warianty tego samego modelu danych\n- warto rozumiec ich semantyke, a nie tylko kopiowac nazwy z pamieci\n\n### Na rozmowie\nPowiedz, ze utility types sa sposobem na skladanie nowych typow z juz istniejacych kontraktow.",
+    "categories": ["typescript"],
+    "images": [],
+    "links": [
+      {
+        "label": "TypeScript Docs: Utility Types",
+        "href": "https://www.typescriptlang.org/docs/handbook/utility-types.html"
+      }
+    ]
+  },
+  {
+    "id": "typescript-extends-implements-constraints",
+    "name": "Jak dzialaja extends, implements i generic constraints w TypeScript?",
+    "description": "`extends` i `implements` wygladaja podobnie, ale nie rozwiazuja tego samego problemu. `extends` sluzy do dziedziczenia albo ograniczania typu, `implements` sprawdza, czy klasa spelnia kontrakt interfejsu, a generic constraints typu `T extends ...` mowia, jakie minimum musi spelniac parametr generyczny.\n\n### Najwazniejsze punkty\n- `class A extends B` dziedziczy po klasie bazowej\n- `class A implements X` nie tworzy dziedziczenia po interfejsie, tylko waliduje zgodnosc ksztaltu\n- `T extends { id: string }` pozwala bezpiecznie korzystac z `id` wewnatrz generyka\n\n### Na rozmowie\nPowiedz, ze `extends` i `implements` moga wystepowac w innych miejscach i pelnia inne role niz wylacznie klasyczne OOP.",
+    "categories": ["typescript"],
+    "images": [],
+    "links": [
+      {
+        "label": "TypeScript Docs: Classes",
+        "href": "https://www.typescriptlang.org/docs/handbook/2/classes"
+      },
+      {
+        "label": "TypeScript Docs: Generics",
+        "href": "https://www.typescriptlang.org/docs/handbook/2/generics.html"
+      }
+    ]
+  },
+  {
+    "id": "typescript-assertions-const-assertions-satisfies",
+    "name": "Czym roznia sie type assertions, const assertions i satisfies?",
+    "description": "Type assertion mowi kompilatorowi, jak chcesz traktowac wartosc typowo, ale sama nie zmienia danych w runtime. `as const` zatrzymuje literalne typy i robi z obiektu bardziej readonly wersje, a `satisfies` pozwala sprawdzic zgodnosc z kontraktem bez utraty szczegolow inference.\n\n### Najwazniejsze punkty\n- zwykle assertion typu `as X` trzeba stosowac ostroznie, bo latwo nim ukryc problem\n- `as const` dobrze pasuje do stalych konfiguracji i discriminated unions\n- `satisfies` jest swietne, gdy chcesz walidowac shape obiektu, ale zachowac konkretne typy pol\n\n### Na rozmowie\nPowiedz, ze `satisfies` jest czesto bezpieczniejsza alternatywa dla agresywnego rzutowania przez `as`.",
+    "categories": ["typescript"],
+    "images": [],
+    "links": [
+      {
+        "label": "TypeScript Docs: Everyday Types",
+        "href": "https://www.typescriptlang.org/docs/handbook/2/everyday-types.html"
+      },
+      {
+        "label": "TypeScript Docs: TypeScript 3.4",
+        "href": "https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-4"
+      },
+      {
+        "label": "TypeScript Docs: TypeScript 4.9",
+        "href": "https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-9.html"
+      }
+    ]
+  },
+  {
+    "id": "typescript-tsconfig-strict",
+    "name": "Co daje strict mode w tsconfig i ktore opcje sa najwazniejsze?",
+    "description": "Flaga `strict` wlacza zestaw bardziej rygorystycznych sprawdzen typow i zwykle jest najlepszym punktem startowym dla projektu. W praktyce poprawia jakosc kodu, ale przy migracji starej bazy potrafi od razu pokazac duzo problemow.\n\n### Najwazniejsze punkty\n- `strict` uruchamia cala rodzine ostrzejszych sprawdzen\n- bardzo czesto wracaja tematy `strictNullChecks`, `noImplicitAny` i `strictFunctionTypes`\n- przy migracji warto wlaczac rygor stopniowo, ale kierunek powinien byc w strone pelnego strict\n\n### Na rozmowie\nPowiedz, ze `strict` to nie fanaberia, tylko narzedzie do szybszego lapiania problemow jeszcze przed runtime.",
+    "categories": ["typescript"],
+    "images": [],
+    "links": [
+      {
+        "label": "TypeScript Docs: strict",
+        "href": "https://www.typescriptlang.org/tsconfig/strict.html"
+      }
+    ]
+  },
+  {
+    "id": "react-useeffect-mental-model",
+    "name": "Jak tlumaczyc useEffect bez magicznego myslenia?",
+    "description": "## Sedno\n\n`useEffect` nie sluzy do obliczen podczas renderu. To mechanizm do synchronizacji Reacta z czyms **poza renderem**.\n\n- requesty HTTP\n- subskrypcje\n- timery\n- integracje z DOM API\n\n### Dobra odpowiedz\n\nPowiedz, ze jesli cos da sie policzyc z propsow i state, to powinno zostac w renderze, a nie w efekcie.",
+    "categories": ["react"]
+  },
+  {
+    "id": "react-list-keys",
+    "name": "Po co Reactowi stabilne key w listach?",
+    "description": "## Dlaczego to wazne\n\n`key` pomaga Reactowi rozpoznac, **ktory element jest ktory** miedzy renderami.\n\n- zle `key`, np. indeks tablicy, moze psuc lokalny stan komponentow\n- dobre `key` pochodzi z danych, np. `question.id`\n\n### Typowy blad\n\nUzywanie indeksu jest ryzykowne, gdy lista zmienia kolejnosc, filtruje sie albo usuwa elementy.",
+    "categories": ["react"]
+  },
+  {
+    "id": "controlled-vs-uncontrolled",
+    "name": "Controlled vs uncontrolled components",
+    "description": "## Roznica\n\nW komponencie **controlled** wartosc inputa siedzi w stanie Reacta. W **uncontrolled** zrodlem prawdy jest DOM.\n\n- controlled daje pelna kontrole i walidacje\n- uncontrolled bywa prostszy przy integracji z formularzami lub refami\n\n### Na rozmowie\n\nNajczesciej frontend w aplikacji produktowej i tak konczy z controlled inputs dla przewidywalnosci.",
+    "categories": ["react"]
+  },
+  {
+    "id": "css-specificity",
+    "name": "Jak dzialaja cascade, specificity i inheritance w CSS?",
+    "description": "CSS nie patrzy tylko na selector, ale na caly mechanizm kaskady. Najpierw liczy sie pochodzenie i waznosc reguly, potem specificity, a inheritance wchodzi dopiero tam, gdzie element nie ma ustawionej wlasnej wartosci.\n\n### Najwazniejsze punkty\n- specificity porownuje wage selektorow, ale nie wygrywa z wyzszym originem ani `!important`\n- dziedzicza tylko niektore wlasciwosci, np. `color`, a nie np. `border`\n- problemow z CSS zwykle nie rozwiazuje sie coraz mocniejszym selektorem, tylko lepsza struktura stylowania\n\n### Na rozmowie\nPowiedz, ze specificity jest tylko jednym elementem kaskady, a nie jedyna regula decydujaca o wyniku.",
+    "categories": ["css"],
+    "images": [],
+    "links": [
+      {
+        "label": "MDN: Introduction to the CSS cascade",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_cascade/Cascade"
+      },
+      {
+        "label": "MDN: Specificity",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_cascade/Specificity"
+      },
+      {
+        "label": "MDN: Inheritance",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Cascade/Inheritance"
+      }
+    ]
+  },
+  {
+    "id": "css-box-model",
+    "name": "Jak dziala box model w CSS?",
+    "description": "Kazdy element renderowany przez przegladarke jest pudelkiem skladajacym sie z contentu, paddingu, borderu i marginesu. Kluczowe pytanie na rozmowie brzmi zwykle: co wchodzi do rozmiaru elementu i jak zmienia to `box-sizing`.\n\n### Najwazniejsze punkty\n- domyslnie `width` i `height` dotycza content boxa\n- `padding` i `border` powiekszaja finalny rozmiar przy `box-sizing: content-box`\n- `box-sizing: border-box` zwykle upraszcza liczenie layoutu\n\n### Na rozmowie\nPowiedz, ze problemy z szerokoscia elementu czesto wynikaja z niezrozumienia, czy liczysz sam content, czy tez border i padding.",
+    "categories": ["css"],
+    "images": [
+      {
+        "src": "/images/css-box-model-codexremind.webp",
+        "alt": "Diagram pokazujacy content, padding, border i margin w modelu pudelkowym CSS"
+      }
+    ],
+    "links": [
+      {
+        "label": "MDN: Introduction to the CSS box model",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Box_model/Introduction"
+      }
+    ]
+  },
+  {
+    "id": "css-display-flow-formatting-context",
+    "name": "Jak rozumiec display, document flow i formatting context?",
+    "description": "Domyslnie elementy ukladaja sie w normal flow, czyli w przewidywalnym porzadku blokowym albo inline. `display` zmienia sposob udzialu elementu w tym ukladzie, a formatting context okresla, jak elementy w danym obszarze oddzialuja na siebie.\n\n### Najwazniejsze punkty\n- element wyjety z flow, np. przez `position: absolute`, przestaje rezerwowac miejsce jak zwykle\n- `display` to nie tylko `block` i `inline`, ale tez m.in. `flex`, `grid` i `flow-root`\n- wiele problemow layoutowych wynika z tego, ze cos jest in-flow albo out-of-flow, a nie z samego CSS magicznie\n\n### Na rozmowie\nPowiedz, ze zanim siegniesz po flex albo grid, warto rozumiec normal flow, bo to jest punkt wyjscia dla calego layoutu.",
+    "categories": ["css"],
+    "images": [],
+    "links": [
+      {
+        "label": "MDN: CSS flow layout",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Display/Flow_layout"
+      }
+    ]
+  },
+  {
+    "id": "css-position-z-index-stacking-context",
+    "name": "Jak dzialaja position, z-index i stacking context?",
+    "description": "`z-index` nie dziala w prozni, tylko w ramach konkretnego stacking context. Dlatego samo ustawienie duzego `z-index` nie gwarantuje, ze element bedzie na wierzchu, jesli siedzi w innym kontekscie niz element, z ktorym konkuruje.\n\n### Najwazniejsze punkty\n- `position` zmienia sposob pozycjonowania i czesto warunkuje sens uzycia `z-index`\n- stacking context moze powstac nie tylko przez `position`, ale tez np. przez `transform`\n- najczestszy blad to walka liczba `9999` zamiast zrozumienia hierarchii warstw\n\n### Na rozmowie\nPowiedz, ze problem z `z-index` to zwykle problem ze stacking context, a nie z za mala liczba.",
+    "categories": ["css"],
+    "images": [
+      {
+        "src": "/images/css-stacking-context-codexremind.webp",
+        "alt": "Schemat pokazujacy zagniezdzone stacking contexty i dlaczego z-index porownuje sie tylko w ich ramach"
+      }
+    ],
+    "links": [
+      {
+        "label": "MDN: Understanding z-index",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Positioned_layout/Understanding_z-index"
+      },
+      {
+        "label": "MDN: Stacking context",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Positioned_layout/Stacking_context"
+      }
+    ]
+  },
+  {
+    "id": "css-flexbox",
+    "name": "Kiedy uzywac Flexboxa i jak go tlumaczyc na rozmowie?",
+    "description": "Flexbox to jednowymiarowy model layoutu, dobry do ukladania elementow w jednym kierunku: wierszu albo kolumnie. Najlepiej sprawdza sie przy centrowaniu, rozkladaniu wolnej przestrzeni i budowaniu mniejszych ukladow komponentowych.\n\n### Najwazniejsze punkty\n- flex operuje na osi glownej i poprzecznej\n- bardzo czesto wracaja `justify-content`, `align-items`, `flex-grow` i `flex-shrink`\n- flex nie zastępuje kazdego layoutu, bo nie jest modelem dwuwymiarowym\n\n### Na rozmowie\nPowiedz, ze Flexbox jest swietny do ukladu w jednym kierunku, ale przy pelnej siatce czesto lepszy jest Grid.",
+    "categories": ["css"],
+    "images": [],
+    "links": [
+      {
+        "label": "MDN: Basic concepts of flexbox",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_flexible_box_layout/Basic_concepts_of_flexbox"
+      }
+    ]
+  },
+  {
+    "id": "css-grid",
+    "name": "Kiedy lepszy jest CSS Grid niz Flexbox?",
+    "description": "Grid to dwuwymiarowy model layoutu, wiec lepiej nadaje sie do ukladania elementow jednoczesnie w wierszach i kolumnach. To dobry wybor przy pelniejszych siatkach strony, dashboardach i ukladach, gdzie zalezy Ci na kontroli obu osi naraz.\n\n### Najwazniejsze punkty\n- grid operuje na trackach, liniach i obszarach siatki\n- pozwala planowac layout bardziej globalnie niz flex\n- flex i grid nie sa rywalami, tylko rozwiazuja rozne klasy problemow\n\n### Na rozmowie\nPowiedz, ze Grid wybierasz tam, gdzie myslisz kategoriami siatki i relacji miedzy wierszami oraz kolumnami.",
+    "categories": ["css"],
+    "images": [],
+    "links": [
+      {
+        "label": "MDN: Basic concepts of grid layout",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Grid_layout/Basic_concepts"
+      }
+    ]
+  },
+  {
+    "id": "css-responsive-media-container-queries",
+    "name": "Jak rozumiec responsive design z media queries i container queries?",
+    "description": "Media queries reaguja na viewport albo cechy urzadzenia, a container queries na rozmiar konkretnego kontenera. To znaczy, ze media queries dobrze sprawdzaja sie na poziomie calej strony, a container queries sa bardzo mocne w komponentach reuzywalnych.\n\n### Najwazniejsze punkty\n- media queries sa nadal podstawowym narzedziem dla globalnego responsive layoutu\n- container queries lepiej skaluja sie w systemach komponentowych\n- responsywnosc to nie tylko breakpointy, ale tez sensowne zachowanie komponentu w roznych kontekstach\n\n### Na rozmowie\nPowiedz, ze media queries patrza na viewport, a container queries na rodzica komponentu.",
+    "categories": ["css"],
+    "images": [],
+    "links": [
+      {
+        "label": "MDN: CSS media queries",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Media_queries"
+      },
+      {
+        "label": "MDN: CSS container queries",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Containment/Container_queries"
+      }
+    ]
+  },
+  {
+    "id": "css-custom-properties",
+    "name": "Po co sa CSS custom properties?",
+    "description": "Custom properties pozwalaja przechowywac wartosci, do ktorych odwolujesz sie potem przez `var()`. Najczesciej uzywa sie ich do kolorow, spacingu, tokenow design systemu i budowy motywow bez kopiowania tych samych wartosci po calym CSS.\n\n### Najwazniejsze punkty\n- to nie sa zwykle preprocesorowe zmienne, bo uczestnicza w kaskadzie\n- dobrze wspieraja theming i lokalne nadpisywanie wartosci\n- nazwy typu `--color-text-primary` sa cenniejsze niz surowe hex-y porozrzucane po plikach\n\n### Na rozmowie\nPowiedz, ze custom properties daja reuzywalnosc wartosci i dobrze wspolpracuja z kaskada oraz motywami.",
+    "categories": ["css"],
+    "images": [],
+    "links": [
+      {
+        "label": "MDN: Using CSS custom properties",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Cascading_variables/Using_custom_properties"
+      }
+    ]
+  },
+  {
+    "id": "css-reflow-repaint-compositing",
+    "name": "Czym roznia sie reflow, repaint i compositing?",
+    "description": "Te pojecia opisuja rozne koszty zmian wizualnych w przegladarce. Reflow dotyczy przeliczania ukladu, repaint ponownego malowania, a compositing skladania gotowych warstw, wiec zwykle jest najtanszy z tej trojki.\n\n### Najwazniejsze punkty\n- zmiana layoutu jest zwykle drozsza niz sama zmiana koloru albo opacity\n- `transform` i `opacity` sa czesto bezpieczniejsze dla plynnosci animacji niz np. `top` czy `width`\n- to temat CSS, ale mocno laczy sie z renderingiem przegladarki i performance\n\n### Na rozmowie\nPowiedz, ze nie kazda zmiana stylu kosztuje tyle samo, bo przegladarka przechodzi przez rozne etapy aktualizacji widoku.",
+    "categories": ["css"],
+    "images": [
+      {
+        "src": "/images/reflow-repaint-compositing-codexremind.webp",
+        "alt": "Schemat pokazujacy roznice miedzy layoutem, paint i compositingiem oraz przyklady wlasciwosci CSS wywolujacych kazdy etap"
+      }
+    ],
+    "links": [
+      {
+        "label": "MDN: Animation performance and frame rate",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/Performance/Animation_performance_and_frame_rate"
+      }
+    ]
+  },
+  {
+    "id": "css-transforms-transitions-animations-performance",
+    "name": "Jak lacza sie transforms, transitions, animations i performance?",
+    "description": "Transformy zmieniaja sposob wyswietlenia elementu bez ruszania normalnego flow, transitions slużą do prostych przejsc miedzy stanami, a animations do bardziej rozbudowanych sekwencji keyframe. Z perspektywy performance najwazniejsze jest, zeby animowac wlasciwosci, ktore nie wywoluja drogich przeliczen layoutu.\n\n### Najwazniejsze punkty\n- `transition` dobrze pasuje do hoverow i prostych zmian stanu\n- `animation` daje wieksza kontrole nad przebiegiem i powtorzeniami\n- animowanie `transform` i `opacity` jest zwykle bezpieczniejsze niz animowanie geometrii layoutu\n\n### Na rozmowie\nPowiedz, ze dobra animacja to nie tylko wyglad, ale tez wybor takich wlasciwosci, ktore nie psuja plynnosci interfejsu.",
+    "categories": ["css"],
+    "images": [],
+    "links": [
+      {
+        "label": "MDN: Using CSS animations",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Animations/Using"
+      },
+      {
+        "label": "MDN: CSS and JavaScript animation performance",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/CSS_JavaScript_animation_performance"
+      }
+    ]
+  },
+  {
+    "id": "button-vs-div",
+    "name": "Dlaczego klikany div nie jest dobrym buttonem?",
+    "description": "## Accessibility first\n\nSemantyczny `button` ma obsluge klawiatury, focus, role i oczekiwane zachowanie od razu.\n\n- `div` wymaga recznego dorobienia `role`, `tabIndex` i obslugi klawiszy\n- i tak zwykle wychodzi gorzej niz natywny element\n\n### Dobra odpowiedz\n\nJesli cos jest akcja, zaczynasz od `button`, a nie od stylowanego `div`.",
+    "categories": ["html"],
+    "images": [],
+    "links": [
+      {
+        "label": "MDN: <button>",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/button"
+      },
+      {
+        "label": "MDN: ARIA",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA"
+      }
+    ]
+  },
+  {
+    "id": "semantic-html",
+    "name": "Czym jest semantic HTML i po co go uzywac?",
+    "description": "Semantic HTML polega na wybieraniu elementow zgodnie z ich znaczeniem, a nie tylko wygladem. Dzieki temu kod jest czytelniejszy, lepiej wspiera accessibility, SEO i rozne narzedzia, ktore analizuja strukture strony.\n\n### Najwazniejsze punkty\n- `header`, `main`, `nav`, `section`, `article` i `footer` niosa znaczenie, a nie tylko layout\n- `div` i `span` sa neutralne semantycznie i nie powinny zastępowac wszystkiego\n- dobra semantyka zwykle zmniejsza liczbe hackow ARIA\n\n### Na rozmowie\nPowiedz, ze semantic HTML to budowanie struktury dokumentu zgodnie z sensem tresci, a nie z samym wygladem UI.",
+    "categories": ["html"],
+    "images": [],
+    "links": [
+      {
+        "label": "MDN: Structuring documents",
+        "href": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Structuring_content/Structuring_documents"
+      },
+      {
+        "label": "MDN: HTML elements reference",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements"
+      }
+    ]
+  },
+  {
+    "id": "forms-label-fieldset-legend",
+    "name": "Po co w formularzach sa label, fieldset i legend?",
+    "description": "`label` laczy opis z konkretnym polem i poprawia obsluge klawiatury oraz czytnikow ekranu. `fieldset` grupuje powiazane pola, a `legend` nadaje tej grupie wspolny tytul, co jest szczegolnie wazne przy checkboxach i radio buttonach.\n\n### Najwazniejsze punkty\n- klikniecie w `label` ustawia focus na odpowiednim kontrolce\n- `fieldset` i `legend` buduja czytelna strukture formularza\n- placeholder nie zastępuje prawidlowego labela\n\n### Na rozmowie\nPowiedz, ze te elementy poprawiaja zarówno semantyke formularza, jak i jego accessibility.",
+    "categories": ["html"],
+    "images": [],
+    "links": [
+      {
+        "label": "MDN: <label>",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/label"
+      },
+      {
+        "label": "MDN: <fieldset>",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/fieldset"
+      },
+      {
+        "label": "MDN: <legend>",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/legend"
+      }
+    ]
+  },
+  {
+    "id": "responsive-images-html",
+    "name": "Jak dzialaja responsive images: srcset, sizes i picture?",
+    "description": "Responsive images pozwalaja dostarczyc przegladarce kilka wariantow obrazka i pozwolic jej wybrac najlepszy w zaleznosci od viewportu, gestosci pikseli i warunkow renderu. `srcset` i `sizes` pomagaja przy doborze rozmiaru, a `picture` pozwala dodatkowo przelaczac zrodla, np. pod inne kadry albo formaty.\n\n### Najwazniejsze punkty\n- to temat HTML i performance jednoczesnie, bo nie chodzi tylko o wyglad\n- `picture` przydaje sie przy art direction, nie tylko przy rozdzielczosci\n- duzy obraz w `img` bez wariantow czesto oznacza niepotrzebny transfer na mobile\n\n### Na rozmowie\nPowiedz, ze responsive images pomagaja zaladowac obraz adekwatny do urzadzenia, a nie jeden ciezki plik dla wszystkich.",
+    "categories": ["html"],
+    "images": [],
+    "links": [
+      {
+        "label": "MDN: Responsive images",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/HTML/Guides/Responsive_images"
+      }
+    ]
+  },
+  {
+    "id": "input-types-autocomplete-accessibility",
+    "name": "Dlaczego input types i autocomplete maja znaczenie dla accessibility formularzy?",
+    "description": "Dobry typ inputa daje przegladarce i urzadzeniu jasna informacje, czego oczekujesz od uzytkownika. `type=\"email\"`, `type=\"tel\"` czy poprawne `autocomplete` pomagaja w walidacji, podpowiedziach, autofillu i odpowiedniej klawiaturze na mobile.\n\n### Najwazniejsze punkty\n- zly `type` pogarsza UX i moze utrudnic wypelnianie formularza\n- `autocomplete` to nie detal, tylko realna pomoc dla uzytkownika\n- sama biblioteka formularzy nie naprawi zlego HTML-a pod spodem\n\n### Na rozmowie\nPowiedz, ze dobrze dobrane typy i atrybuty formularza poprawiaja wygode, semantyke i dostepnosc bez dodatkowego JavaScriptu.",
+    "categories": ["html"],
+    "images": [],
+    "links": [
+      {
+        "label": "MDN: <input>",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input"
+      },
+      {
+        "label": "MDN: autocomplete",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete"
+      }
+    ]
+  },
+  {
+    "id": "aria-when-helps-when-hurts",
+    "name": "Kiedy ARIA pomaga, a kiedy szkodzi?",
+    "description": "ARIA pomaga wtedy, gdy natywne HTML nie daje potrzebnej semantyki lub stanu dla bardziej zlozonych widgetow. Szkodzi wtedy, gdy probujesz nia naprawiac cos, co powinno byc po prostu natywnym elementem, bo latwo dodac role bez zachowania klawiatury, focusu i prawidlowego zachowania.\n\n### Najwazniejsze punkty\n- pierwsza zasada ARIA: jesli mozna uzyc natywnego HTML, to uzyj natywnego HTML\n- zla ARIA potrafi pogorszyc accessibility zamiast ja poprawic\n- samo dodanie `role` nie zalatwia calego zachowania komponentu\n\n### Na rozmowie\nPowiedz, ze ARIA uzupelnia HTML, a nie jest zamiennikiem poprawnej semantyki.",
+    "categories": ["html"],
+    "images": [],
+    "links": [
+      {
+        "label": "MDN: ARIA",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA"
+      },
+      {
+        "label": "W3C: Using ARIA",
+        "href": "https://www.w3.org/TR/using-aria/"
+      }
+    ]
+  },
+  {
+    "id": "alt-text-figure-figcaption",
+    "name": "Jak rozumiec alt text, figure i figcaption?",
+    "description": "`alt` opisuje znaczenie obrazu dla osob, ktore go nie widza lub gdy nie da sie go wyswietlic. `figure` sluzy do samodzielnej jednostki tresci, a `figcaption` daje jej podpis, ale nie zastępuje dobrze dobranego `alt`.\n\n### Najwazniejsze punkty\n- `alt` powinien opisywac sens obrazu w kontekscie, nie zawsze wszystko co widac piksel po pikselu\n- dekoracyjne obrazy powinny miec puste `alt`, a nie losowy tekst\n- `figcaption` jest podpisem dla calosci figury, nie technicznym zamiennikiem atrybutu `alt`\n\n### Na rozmowie\nPowiedz, ze `alt` i `figcaption` pelnia rozne role i nie powinno sie ich mylic.",
+    "categories": ["html"],
+    "images": [],
+    "links": [
+      {
+        "label": "MDN: <img>",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/img"
+      },
+      {
+        "label": "MDN: <figure>",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/figure"
+      },
+      {
+        "label": "MDN: <figcaption>",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/figcaption"
+      }
+    ]
+  },
+  {
+    "id": "script-async-vs-defer",
+    "name": "Czym roznia sie script async i defer?",
+    "description": "Oba atrybuty pozwalaja pobierac skrypt bez blokowania calego parsowania HTML, ale nie dzialaja tak samo. `async` uruchamia skrypt zaraz po pobraniu i nie gwarantuje kolejnosci, a `defer` zachowuje kolejnosc i odpala skrypty po sparsowaniu dokumentu.\n\n### Najwazniejsze punkty\n- `async` jest dobre dla skryptow niezaleznych, np. analityki\n- `defer` jest lepsze, gdy skrypt zalezy od DOM albo od kolejnosci innych skryptow\n- klasyczny `script` bez tych atrybutow blokuje parser\n\n### Na rozmowie\nPowiedz, ze glowna roznica dotyczy momentu wykonania i gwarancji kolejnosci.",
+    "categories": ["html"],
+    "images": [],
+    "links": [
+      {
+        "label": "MDN: <script>",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/script"
+      },
+      {
+        "label": "MDN: HTMLScriptElement.async",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/API/HTMLScriptElement/async"
+      },
+      {
+        "label": "MDN: HTMLScriptElement.defer",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/API/HTMLScriptElement/defer"
+      }
+    ]
+  },
+  {
+    "id": "cdn",
+    "name": "Czym jest CDN i po co uzywa sie go we frontendzie?",
+    "description": "CDN to siec serwerow, ktora dostarcza pliki z lokalizacji blizszej uzytkownikowi. Dzieki temu statyczne assety, takie jak obrazy, CSS, JavaScript i fonty, zwykle laduja sie szybciej.\n\n### Najwazniejsze punkty\n- zmniejsza opoznienia przy pobieraniu plikow\n- odciaza serwer aplikacji\n- dobrze wspolpracuje z cache\n- najczesciej sluzy do serwowania statycznych zasobow\n\n### Na rozmowie\nPowiedz, ze CDN poprawia wydajnosc i skalowalnosc, bo uzytkownik pobiera assety z serwera blizszego swojej lokalizacji.",
+    "categories": ["architecture"],
+    "images": [],
+    "links": []
+  },
+  {
+    "id": "browser-rendering-pipeline",
+    "name": "Jak wyglada browser rendering pipeline: DOM, CSSOM, layout, paint i composite?",
+    "description": "Przegladarka najpierw parsuje HTML do DOM i CSS do CSSOM, a potem buduje drzewo renderowania. Na tej podstawie liczy layout, maluje piksele i sklada warstwy na ekranie.\n\n### Najwazniejsze punkty\n- JavaScript i CSS moga opozniac dojscie do renderu\n- layout liczy rozmiary i polozenia elementow\n- paint rysuje zawartosc, a compositing sklada gotowe warstwy\n\n### Na rozmowie\nPowiedz, ze zrozumienie pipeline pomaga tlumaczyc wydajnosc renderu i koszt zmian w DOM oraz CSS.",
+    "categories": ["architecture"],
+    "images": [
+      {
+        "src": "/images/browser-rendering-pipeline-codexremind.webp",
+        "alt": "Schemat przejscia od HTML i CSS do DOM, CSSOM, layout, paint i compositing"
+      }
+    ],
+    "links": [
+      {
+        "label": "MDN: How browsers work",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/How_browsers_work"
+      },
+      {
+        "label": "MDN: Critical rendering path",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/Critical_rendering_path"
+      }
+    ]
+  },
+  {
+    "id": "csr-vs-ssr-vs-ssg-vs-isr",
+    "name": "Czym roznia sie CSR, SSR, SSG i ISR?",
+    "description": "To rozne strategie tego, kiedy i gdzie powstaje HTML dla widoku. CSR renderuje glownie po stronie klienta, SSR na serwerze przy requestcie, SSG w buildzie, a ISR pozwala odswiezac statyczne strony po czasie bez pelnego rebuildu.\n\n### Najwazniejsze punkty\n- CSR daje prostszy hosting, ale gorszy start przy ciezkim JS\n- SSR i SSG poprawiaja first render i zwykle SEO\n- ISR jest kompromisem miedzy swiezoscia danych a kosztem generowania\n\n### Na rozmowie\nPowiedz, ze wybor strategii zalezy od SEO, czasu odpowiedzi, kosztu renderu i charakteru danych.",
+    "categories": ["architecture"],
+    "images": [],
+    "links": [
+      {
+        "label": "web.dev: Rendering on the Web",
+        "href": "https://web.dev/rendering-on-the-web/"
+      }
+    ]
+  },
+  {
+    "id": "code-splitting",
+    "name": "Czym jest code splitting i po co sie go robi?",
+    "description": "Code splitting polega na dzieleniu JavaScriptu na mniejsze chunki, zamiast ladowac wszystko przy starcie aplikacji. Dzieki temu pierwsze wejscie jest lzejsze, a dodatkowy kod dociaga sie dopiero wtedy, gdy faktycznie jest potrzebny.\n\n### Najwazniejsze punkty\n- czesto dzieli sie kod per route albo per ciezki komponent\n- dobrze laczy sie z dynamic importem i lazy loadingiem\n- zbyt agresywne dzielenie moze zwiekszyc liczbe requestow i narzut runtime\n\n### Na rozmowie\nPowiedz, ze celem code splittingu jest zmniejszenie initial bundle, a nie samo mnozenie plikow.",
+    "categories": ["architecture"],
+    "images": [],
+    "links": [
+      {
+        "label": "web.dev: Code splitting with dynamic imports",
+        "href": "https://web.dev/learn/performance/code-split-javascript"
+      }
+    ]
+  },
+  {
+    "id": "lazy-loading-assets-views",
+    "name": "Na czym polega lazy loading assetow i widokow?",
+    "description": "Lazy loading odklada pobranie lub wyrenderowanie niekrytycznych zasobow do momentu, gdy beda potrzebne. Dotyczy to np. obrazow poza viewportem, ciezkich widokow, modalow albo rzadko uzywanych sekcji aplikacji.\n\n### Najwazniejsze punkty\n- obrazy mozna lazy-loadowac natywnie przez `loading=\"lazy\"`\n- widoki i komponenty czesto lazy-loaduje sie przez dynamic import\n- trzeba pilnowac UX, zeby opoznienie nie bylo zaskoczeniem dla uzytkownika\n\n### Na rozmowie\nPowiedz, ze lazy loading zmniejsza koszt startowy, ale wymaga sensownego fallbacku loading i dobrego podzialu kodu.",
+    "categories": ["architecture"],
+    "images": [],
+    "links": [
+      {
+        "label": "MDN: Lazy loading",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/Lazy_loading"
+      }
+    ]
+  },
+  {
+    "id": "http-caching-cache-control-etag",
+    "name": "Jak dzialaja HTTP caching, Cache-Control i ETag?",
+    "description": "HTTP caching pozwala przegladarce albo proxy ponownie uzyc odpowiedzi bez sciagania wszystkiego od zera. `Cache-Control` steruje polityka cache, a `ETag` pomaga sprawdzic, czy zasob zmienil sie od poprzedniego requestu.\n\n### Najwazniejsze punkty\n- dobre cache dla statycznych assetow mocno poprawia wydajnosc\n- `max-age`, `immutable` i wersjonowanie plikow czesto ida razem\n- `ETag` i request warunkowy pomagaja unikac wysylania calej odpowiedzi, gdy nic sie nie zmienilo\n\n### Na rozmowie\nPowiedz, ze caching to jeden z najtanszych sposobow poprawy czasu ladowania i odciazenia serwera.",
+    "categories": ["architecture"],
+    "images": [],
+    "links": [
+      {
+        "label": "MDN: HTTP caching",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching"
+      }
+    ]
+  },
+  {
+    "id": "core-web-vitals",
+    "name": "Czym sa Core Web Vitals i dlaczego sa wazne?",
+    "description": "Core Web Vitals to zestaw metryk opisujacych jak szybko strona pokazuje glowna tresc, jak stabilny jest layout i jak responsywnie reaguje na interakcje. W praktyce najczesciej wracaja LCP, CLS i INP.\n\n### Najwazniejsze punkty\n- LCP dotyczy czasu pokazania glownego elementu widoku\n- CLS mierzy nieoczekiwane przesuniecia layoutu\n- INP ocenia opoznienie interakcji i jak szybko UI reaguje\n\n### Na rozmowie\nPowiedz, ze to metryki zorientowane na realne odczucie uzytkownika, a nie tylko surowy czas pobrania strony.",
+    "categories": ["architecture"],
+    "images": [],
+    "links": [
+      {
+        "label": "web.dev: Core Web Vitals",
+        "href": "https://web.dev/articles/vitals"
+      }
+    ]
+  },
+  {
+    "id": "feature-based-frontend-architecture",
+    "name": "Na czym polega feature-based architecture frontendu?",
+    "description": "W feature-based architecture kod grupujesz wokol funkcji biznesowych, a nie tylko wedlug typu pliku. Zamiast trzymac osobno wszystkie komponenty, hooki i serwisy, skladasz je blizej konkretnej funkcjonalnosci, np. `auth`, `checkout` albo `profile`.\n\n### Najwazniejsze punkty\n- taki podzial zwykle lepiej skaluje sie przy wiekszym zespole\n- zmniejsza mieszanie niepowiazanych modulow w jednym katalogu\n- wymaga pilnowania granic miedzy feature'ami, zeby nie zrobic chaosu pod inna nazwa\n\n### Na rozmowie\nPowiedz, ze celem jest lepsza modularnosc i utrzymanie kodu blizej domeny biznesowej.",
+    "categories": ["architecture"],
+    "images": [],
+    "links": []
+  },
+  {
+    "id": "dns-tls-latency",
+    "name": "Skad biora sie opoznienia: DNS, TLS handshake i latency?",
+    "description": "Zanim przegladarka zacznie pobierac dane, musi jeszcze rozwiazac domene, nawiazac polaczenie i przejsc handshake, np. TLS. To oznacza, ze opoznienie nie bierze sie tylko z rozmiaru pliku, ale tez z kosztu sieci zanim zacznie sie transfer.\n\n### Najwazniejsze punkty\n- DNS zamienia domene na adres IP\n- handshake i nawiazanie polaczenia dokladaja dodatkowe round tripy\n- dlatego bliskosc serwera, reuse polaczen i cache maja duzy wplyw na odczuwalna szybkosc\n\n### Na rozmowie\nPowiedz, ze duza czesc czasu ladowania moze znikac jeszcze przed pobraniem pierwszego bajtu odpowiedzi.",
+    "categories": ["architecture"],
+    "images": [
+      {
+        "src": "/images/dns-tls-latency-codexremind.webp",
+        "alt": "Schemat kolejnosci DNS lookup, nawiazania polaczenia, TLS handshake i pierwszego requestu HTTP"
+      }
+    ],
+    "links": [
+      {
+        "label": "MDN: Network request lifecycle",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/How_browsers_work#network_request"
+      }
+    ]
+  },
+  {
+    "id": "design-system-component-library",
+    "name": "Czym rozni sie design system od component library?",
+    "description": "Component library to glownie zbior gotowych komponentow UI, a design system jest szerszy i obejmuje tez zasady projektowe, tokeny, wzorce i sposob pracy zespolu. Biblioteka komponentow moze byc czescia design systemu, ale sama w sobie nie zawsze nim jest.\n\n### Najwazniejsze punkty\n- design system porzadkuje spojne decyzje, nie tylko gotowy kod\n- tokeny, typografia, spacing i zasady accessibility sa jego wazna czescia\n- bez governance nawet dobra biblioteka komponentow szybko zaczyna sie rozjezdzac\n\n### Na rozmowie\nPowiedz, ze design system to wspolny jezyk produktu, designu i developmentu, a nie tylko paczka buttonow.",
+    "categories": ["architecture"],
+    "images": [],
+    "links": []
+  },
+  {
+    "id": "server-state-vs-client-state",
+    "name": "Czym rozni sie server state od client state?",
+    "description": "Server state to dane, ktorych zrodlem prawdy jest backend, np. lista uzytkownikow albo koszyk zapisany na serwerze. Client state to lokalny stan UI, np. otwarty modal, aktywna zakladka albo filtr wpisany w formularzu.\n\n### Najwazniejsze punkty\n- server state trzeba pobierac, odswiezac i synchronizowac z siecia\n- client state zyje glownie w pamieci aplikacji i steruje interakcja UI\n- mieszanie tych dwoch typow stanu w jednym miejscu szybko komplikuje kod\n\n### Na rozmowie\nPowiedz, ze te dwa typy stanu maja inne problemy: server state dotyczy synchronizacji, a client state glownie lokalnej logiki interfejsu.",
+    "categories": ["architecture"],
+    "images": [],
+    "links": []
+  },
+  {
+    "id": "load-balancer-reverse-proxy",
+    "name": "Czym sa load balancer i reverse proxy?",
+    "description": "Reverse proxy stoi przed aplikacja i przyjmuje ruch od klienta, a potem przekazuje go dalej do odpowiedniej uslugi. Load balancer jest szczegolnym przypadkiem tej warstwy i sluzy do rozkladania ruchu miedzy wiele instancji backendu.\n\n### Najwazniejsze punkty\n- taka warstwa moze tez terminowac TLS, robic cache albo routing po sciezce i hostcie\n- load balancer poprawia dostepnosc i skale systemu\n- z perspektywy frontendu to czesto wyjasnia, czemu aplikacja stoi za jedna domena mimo wielu uslug pod spodem\n\n### Na rozmowie\nPowiedz, ze reverse proxy porzadkuje wejscie ruchu, a load balancer dodatkowo rozdziela go miedzy repliki.",
+    "categories": ["architecture"],
+    "images": [],
+    "links": [
+      {
+        "label": "MDN: Proxy servers and tunneling",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Proxy_servers_and_tunneling"
+      }
+    ]
+  },
+  {
+    "id": "api-communication-patterns",
+    "name": "Czym roznia sie REST, GraphQL i RPC w komunikacji z API?",
+    "description": "To trzy rozne style projektowania komunikacji miedzy frontendem a backendem. REST zwykle opiera sie o zasoby i endpointy, GraphQL pozwala klientowi precyzyjniej okreslic shape danych, a RPC skupia sie na wywolaniu konkretnej akcji lub procedury.\n\n### Najwazniejsze punkty\n- REST jest prosty i bardzo popularny, ale czasem prowadzi do overfetchingu albo underfetchingu\n- GraphQL daje elastycznosc, ale wnosi dodatkowa zlozonosc po stronie schematu i cache\n- RPC bywa czytelne dla akcji biznesowych, ale mocniej wiaze klienta z API\n\n### Na rozmowie\nPowiedz, ze nie ma jednego najlepszego stylu, tylko rozne kompromisy miedzy prostota, elastycznoscia i kosztem utrzymania.",
+    "categories": ["architecture"],
+    "images": [],
+    "links": [
+      {
+        "label": "MDN: What is REST?",
+        "href": "https://developer.mozilla.org/en-US/docs/Glossary/REST"
+      },
+      {
+        "label": "GraphQL: Learn",
+        "href": "https://graphql.org/learn/"
+      }
+    ]
+  },
+  {
+    "id": "optimistic-ui-retries-fallbacks",
+    "name": "Czym sa optimistic UI, retries i fallbacki w aplikacji frontendowej?",
+    "description": "To techniki poprawiajace odczuwalny UX przy pracy z siecia i opoznieniami. Optimistic UI zaklada sukces operacji zanim serwer odpowie, retries pomagaja przy przejsciowych bledach, a fallbacki daja uzytkownikowi sensowny stan loadingu albo bledu zamiast pustki.\n\n### Najwazniejsze punkty\n- optimistic update wymaga planu rollbacku, gdy request jednak sie nie uda\n- retry nie powinno slepo powtarzac kazdego bledu bez limitu i backoffu\n- fallbacki powinny byc czytelne i nie udawac prawdziwych danych\n\n### Na rozmowie\nPowiedz, ze tu chodzi o balans miedzy szybkoscia odczuwalna, odpornoscia na bledy i przewidywalnoscia stanu aplikacji.",
+    "categories": ["architecture"],
+    "images": [],
+    "links": []
+  },
+  {
+    "id": "http-basics",
+    "name": "Jakie HTTP basics frontend developer powinien znac?",
+    "description": "HTTP to protokol request-response, przez ktory przegladarka komunikuje sie z serwerem. Na rozmowie najczesciej wracaja metody, status codes i headers, bo to one tlumacza, co klient wysyla i jak interpretuje odpowiedz.\n\n### Najwazniejsze punkty\n- `GET`, `POST`, `PUT`, `PATCH` i `DELETE` maja rozne zastosowania semantyczne\n- statusy `2xx`, `3xx`, `4xx` i `5xx` mowia, jak zakonczyl sie request\n- headers, np. `Content-Type`, `Authorization` i `Cache-Control`, niosa dodatkowy kontekst komunikacji\n\n### Na rozmowie\nPowiedz, ze dobra znajomosc HTTP pomaga lepiej debugowac API, cache, auth i problemy sieciowe.",
+    "categories": ["other"],
+    "images": [],
+    "links": [
+      {
+        "label": "MDN: An overview of HTTP",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview"
+      },
+      {
+        "label": "MDN: HTTP request methods",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods"
+      },
+      {
+        "label": "MDN: HTTP response status codes",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status"
+      }
+    ]
+  },
+  {
+    "id": "cors-preflight",
+    "name": "Czym sa CORS i preflight?",
+    "description": "CORS to mechanizm przegladarki, ktory kontroluje, czy frontend moze czytac odpowiedz z innego originu. Przy prostszych requestach przegladarka od razu sprawdza naglowki odpowiedzi, a przy bardziej wrazliwych robi najpierw dodatkowy request `OPTIONS`, czyli preflight.\n\n### Najwazniejsze punkty\n- CORS nie jest zabezpieczeniem backend-backend, tylko polityka egzekwowana przez browser\n- preflight pojawia sie np. przy niestandardowych headers albo nieprostych metodach\n- samo to, ze request dochodzi do serwera, nie znaczy jeszcze, ze frontend bedzie mogl odczytac odpowiedz\n\n### Na rozmowie\nPowiedz, ze CORS dotyczy dostepu do odpowiedzi w przegladarce i wynika z same-origin policy.",
+    "categories": ["other"],
+    "images": [],
+    "links": [
+      {
+        "label": "MDN: CORS",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS"
+      }
+    ]
+  },
+  {
+    "id": "browser-storage-options",
+    "name": "Czym roznia sie cookies, localStorage, sessionStorage i IndexedDB?",
+    "description": "To rozne sposoby przechowywania danych po stronie przegladarki i nie sluza do tego samego. Cookies sa male i moga byc wysylane z requestami, `localStorage` jest proste i trwa miedzy sesjami, `sessionStorage` zyje w ramach jednej karty, a IndexedDB nadaje sie do wiekszych, bardziej zlozonych danych.\n\n### Najwazniejsze punkty\n- `localStorage` i `sessionStorage` sa synchroniczne i przechowuja glownie stringi\n- cookies sa mocno zwiazane z HTTP, sesja i politykami typu `SameSite`\n- IndexedDB jest asynchroniczne i lepiej nadaje sie do wiekszych struktur danych albo offline cache\n\n### Na rozmowie\nPowiedz, ze wybor storage zalezy od tego, czy dane maja byc wysylane do serwera, jak duze sa i jaki maja lifecycle.",
+    "categories": ["other"],
+    "images": [],
+    "links": [
+      {
+        "label": "MDN: Web Storage API",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API"
+      },
+      {
+        "label": "MDN: IndexedDB API",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API"
+      },
+      {
+        "label": "MDN: Using HTTP cookies",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Cookies"
+      }
+    ]
+  },
+  {
+    "id": "auth-in-spa",
+    "name": "Jak wyglada auth w SPA?",
+    "description": "Auth w SPA zwykle polega na zalogowaniu uzytkownika, przechowaniu informacji o sesji lub tokenie i dolaczaniu tego kontekstu do kolejnych requestow. Frontend moze ukrywac widoki i pilnowac flow logowania, ale prawdziwa autoryzacja i tak musi byc egzekwowana przez backend.\n\n### Najwazniejsze punkty\n- access token i refresh token maja rozne role i rozny czas zycia\n- guard po stronie klienta poprawia UX, ale nie jest granica bezpieczenstwa\n- wybor miedzy cookies a tokenami w storage ma konkretne kompromisy bezpieczenstwa i wygody\n\n### Na rozmowie\nPowiedz, ze w SPA najwazniejsze sa lifecycle tokenow, bezpieczne przechowywanie i rozroznienie auth od authorization.",
+    "categories": ["other"],
+    "images": [],
+    "links": []
+  },
+  {
+    "id": "same-origin-policy",
+    "name": "Czym jest same-origin policy?",
+    "description": "Same-origin policy to podstawowa zasada bezpieczenstwa przegladarki, ktora ogranicza dostep skryptu do zasobow z innego originu. Origin oznacza kombinacje protokolu, hosta i portu, wiec roznica w ktorymkolwiek z tych elementow robi inny origin.\n\n### Najwazniejsze punkty\n- SOP blokuje np. swobodny odczyt danych z innej domeny przez JavaScript\n- CORS jest kontrolowanym wyjatkiem od tego ograniczenia\n- to jedna z glownych przyczyn, dla ktorych frontend nie moze po prostu sterowac obca karta czy sesja z innej domeny\n\n### Na rozmowie\nPowiedz, ze same-origin policy chroni uzytkownika przed mieszaniem danych i uprawnien miedzy roznych originami.",
+    "categories": ["other"],
+    "images": [
+      {
+        "src": "/images/same-origin-policy-codexremind.webp",
+        "alt": "Porownanie originow wedlug schematu, hosta i portu z przykladami co jest tym samym originem, a co nie"
+      }
+    ],
+    "links": [
+      {
+        "label": "MDN: Same-origin policy",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy"
+      }
+    ]
+  },
+  {
+    "id": "websocket-vs-sse-vs-polling",
+    "name": "Czym roznia sie WebSocket, SSE i polling?",
+    "description": "To trzy sposoby dostarczania aktualizacji z serwera do klienta, ale z innym kosztem i innym modelem komunikacji. Polling co jakis czas pyta serwer o nowe dane, SSE utrzymuje jednostronny strumien serwer-klient, a WebSocket daje stale, dwukierunkowe polaczenie.\n\n### Najwazniejsze punkty\n- polling jest najprostszy, ale bywa nieefektywny przy czestych odswiezeniach\n- SSE dobrze sprawdza sie przy streamie zdarzen tylko z serwera do klienta\n- WebSocket jest dobry dla real-time i komunikacji w obie strony, ale jest bardziej zlozony operacyjnie\n\n### Na rozmowie\nPowiedz, ze wybor zalezy od tego, czy potrzebujesz pushu, dwukierunkowosci i jak czesto dane sie zmieniaja.",
+    "categories": ["other"],
+    "images": [
+      {
+        "src": "/images/websocket-sse-polling-codexremind.webp",
+        "alt": "Porownanie polling, SSE i WebSocket pod katem kierunku komunikacji, utrzymania polaczenia i typowych zastosowan"
+      }
+    ],
+    "links": [
+      {
+        "label": "MDN: WebSocket API",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/API/WebSocket"
+      },
+      {
+        "label": "MDN: Server-sent events",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events"
+      }
+    ]
+  },
+  {
+    "id": "xss-csrf-csp",
+    "name": "Czym roznia sie XSS, CSRF i CSP?",
+    "description": "XSS polega na wstrzyknieciu lub wykonaniu niebezpiecznego skryptu w przegladarce ofiary, a CSRF na zmuszeniu przegladarki zalogowanego uzytkownika do wykonania niechcianego requestu. CSP nie jest osobnym atakiem, tylko polityka bezpieczenstwa, ktora ogranicza zrodla skryptow i pomaga zmniejszyc skutki XSS.\n\n### Najwazniejsze punkty\n- XSS dotyczy zaufania do danych renderowanych w HTML lub DOM\n- CSRF jest szczegolnie wazny przy auth opartym o cookies\n- CSP, poprawne escapowanie danych i `SameSite` to rozne warstwy obrony, nie zamienniki wszystkiego\n\n### Na rozmowie\nPowiedz, ze XSS i CSRF to rozne klasy zagrozen, a dobra ochrona zwykle laczy kilka mechanizmow naraz.",
+    "categories": ["other"],
+    "images": [],
+    "links": [
+      {
+        "label": "MDN: Content Security Policy (CSP)",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP"
+      },
+      {
+        "label": "OWASP: Cross Site Scripting",
+        "href": "https://owasp.org/www-community/attacks/xss/"
+      },
+      {
+        "label": "OWASP: Cross-Site Request Forgery",
+        "href": "https://owasp.org/www-community/attacks/csrf"
+      }
+    ]
+  },
+  {
+    "id": "testing-unit-integration-e2e",
+    "name": "Czym roznia sie testy unit, integration i e2e?",
+    "description": "Roznia sie glownie zakresem i tym, jak blisko sa realnego zachowania aplikacji. Test unit sprawdza mala jednostke w izolacji, integration test sprawdza wspoldzialanie kilku elementow, a e2e przechodzi przez prawie caly system z perspektywy uzytkownika.\n\n### Najwazniejsze punkty\n- unit tests sa najszybsze i najlatwiej nimi pokryc logike\n- integration tests dobrze wychwytuja problemy na styku modulow albo UI i danych\n- e2e daje najwieksza pewnosc przeplywow, ale jest najwolniejsze i najdrozsze w utrzymaniu\n\n### Na rozmowie\nPowiedz, ze sensowny zestaw testow zwykle laczy te poziomy, zamiast probowac rozwiazac wszystko jednym typem testu.",
+    "categories": ["other"],
+    "images": [],
+    "links": []
+  },
+  {
+    "id": "vue-reactivity-system",
+    "name": "Jak dziala system reaktywnosci Vue?",
+    "description": "System reaktywnosci Vue sledzi odczyty i zapisy stanu, a potem aktualizuje tylko te fragmenty UI, ktore faktycznie zaleza od zmienionych danych. W praktyce Vue buduje zaleznosci miedzy stanem a renderem i buforuje aktualizacje, zamiast przepisywac caly widok na slepo.\n\n### Najwazniejsze punkty\n- reactivity stoi za tym, ze zmiana stanu automatycznie odswieza template\n- `ref()` i `reactive()` to podstawowe sposoby tworzenia reaktywnego stanu\n- aktualizacje DOM nie sa wykonywane natychmiast w tej samej linijce kodu\n\n### Na rozmowie\nPowiedz, ze sila Vue bierze sie z tego, ze framework wie, ktore dane sa uzywane przez dany fragment widoku.",
+    "categories": ["vue"],
+    "images": [],
+    "links": [
+      {
+        "label": "Vue Docs: Reactivity Fundamentals",
+        "href": "https://vuejs.org/guide/essentials/reactivity-fundamentals.html"
+      }
+    ]
+  },
+  {
+    "id": "vue-ref-vs-reactive",
+    "name": "Kiedy uzywac ref, a kiedy reactive w Vue?",
+    "description": "`ref` najlepiej sprawdza sie dla pojedynczych wartosci i tam, gdzie chcesz jasno operowac na jednej referencji. `reactive` robi reaktywny proxy z calego obiektu i jest wygodny przy grupowaniu kilku pol razem, ale ma tez wiecej ograniczen ergonomicznych niz `ref`.\n\n### Najwazniejsze punkty\n- `ref` jest domyslnym i najbezpieczniejszym wyborem w Composition API\n- `reactive` dziala tylko dla obiektow i tablic, nie dla prymitywow\n- przy destrukturyzacji `reactive` latwo zgubic reaktywnosc, jesli zrobisz to nieostroznie\n\n### Na rozmowie\nPowiedz, ze oba API sa poprawne, ale `ref` jest czesto bardziej przewidywalny i lepiej wspolpracuje z TypeScript.",
+    "categories": ["vue"],
+    "images": [],
+    "links": [
+      {
+        "label": "Vue Docs: Reactivity Fundamentals",
+        "href": "https://vuejs.org/guide/essentials/reactivity-fundamentals.html"
+      }
+    ]
+  },
+  {
+    "id": "vue-computed-vs-watch",
+    "name": "Kiedy wybrac computed, a kiedy watch w Vue?",
+    "description": "`computed` sluzy do deklaratywnego liczenia wartosci pochodnych, a `watch` do side effectow, np. requestu, logowania albo synchronizacji z czyms poza komponentem. Jesli chcesz tylko przeliczyc dane do renderu, to prawie zawsze zaczynasz od `computed`, nie od `watch`.\n\n### Najwazniejsze punkty\n- `computed` jest cachowane i zwraca wartosc\n- `watch` reaguje na zmiany i uruchamia callback\n- naduzywanie `watch` do logiki pochodnej zwykle komplikuje komponent\n\n### Na rozmowie\nPowiedz, ze `computed` jest do danych pochodnych, a `watch` do efektow ubocznych.",
+    "categories": ["vue"],
+    "images": [],
+    "links": [
+      {
+        "label": "Vue Docs: Computed Properties",
+        "href": "https://vuejs.org/guide/essentials/computed"
+      },
+      {
+        "label": "Vue Docs: Watchers",
+        "href": "https://vuejs.org/guide/essentials/watchers.html"
+      }
+    ]
+  },
+  {
+    "id": "vue-watcheffect",
+    "name": "Czym rozni sie watchEffect od watch w Vue?",
+    "description": "`watchEffect` sam zbiera zaleznosci uzyte w callbacku, podczas gdy w `watch` jawnie wskazujesz, co ma byc obserwowane. To sprawia, ze `watchEffect` jest wygodny do szybkich reaktywnych efektow, ale mniej precyzyjny niz `watch`.\n\n### Najwazniejsze punkty\n- `watchEffect` uruchamia sie od razu i automatycznie trackuje zaleznosci\n- `watch` daje wieksza kontrole nad source, oldValue i opcjami\n- przy bardziej zlozonych przypadkach, zwlaszcza async, `watch` bywa czytelniejszy\n\n### Na rozmowie\nPowiedz, ze `watchEffect` jest bardziej automatyczny, a `watch` bardziej jawny i kontrolowalny.",
+    "categories": ["vue"],
+    "images": [],
+    "links": [
+      {
+        "label": "Vue Docs: Watchers",
+        "href": "https://vuejs.org/guide/essentials/watchers.html"
+      }
+    ]
+  },
+  {
+    "id": "vue-composables",
+    "name": "Czym sa composables w Vue?",
+    "description": "Composable to funkcja, zwykle zaczynajaca sie od `use`, ktora enkapsuluje i reuzywa stanowa logike oparta o Composition API. To podstawowy sposob wyciagania wspolnej logiki z komponentow bez wracania do mixinow.\n\n### Najwazniejsze punkty\n- composable nie renderuje UI, tylko zwraca stan i funkcje\n- dobrze nadaje sie do fetchowania, obslugi eventow i wspolnych workflow\n- przewaga nad mixinami to lepsza czytelnosc i jasne zrodlo danych\n\n### Na rozmowie\nPowiedz, ze composables sa vue-owym odpowiednikiem reuzywania logiki, a nie szablonow.",
+    "categories": ["vue"],
+    "images": [],
+    "links": [
+      {
+        "label": "Vue Docs: Composables",
+        "href": "https://vuejs.org/guide/reusability/composables"
+      }
+    ]
+  },
+  {
+    "id": "vue-script-setup",
+    "name": "Co daje script setup w Vue?",
+    "description": "`<script setup>` upraszcza zapis komponentow opartych o Composition API. Usuwa sporo boilerplate'u, pozwala korzystac z top-level bindings w template i dobrze wspiera TypeScript.\n\n### Najwazniejsze punkty\n- kod jest krotszy niz przy recznym `setup()`\n- zmienne zadeklarowane na gorze sa od razu dostepne w template\n- wiele makr, np. `defineProps`, dziala wlasnie w tym trybie\n\n### Na rozmowie\nPowiedz, ze `script setup` to glownie sugar kompilatora, a nie osobna filozofia pisania Vue.",
+    "categories": ["vue"],
+    "images": [],
+    "links": [
+      {
+        "label": "Vue Docs: <script setup>",
+        "href": "https://vuejs.org/api/sfc-script-setup.html"
+      }
+    ]
+  },
+  {
+    "id": "vue-defineprops-defineemits",
+    "name": "Do czego sluza defineProps i defineEmits w Vue?",
+    "description": "`defineProps` i `defineEmits` to makra kompilatora uzywane w `<script setup>` do deklarowania kontraktu komponentu. Dzieki nim rodzic wie, jakie propsy dziecko przyjmuje, a dziecko ma jawnie opisane eventy, ktore moze emitowac.\n\n### Najwazniejsze punkty\n- pomagaja utrzymac czytelny interfejs komponentu\n- wspieraja zarowno deklaracje runtime, jak i typowanie TypeScript\n- dobrze ograniczaja przypadkowe, niejawne API komponentu\n\n### Na rozmowie\nPowiedz, ze te makra porzadkuja komunikacje komponentow i poprawiaja inference typow.",
+    "categories": ["vue"],
+    "images": [],
+    "links": [
+      {
+        "label": "Vue Docs: <script setup>",
+        "href": "https://vuejs.org/api/sfc-script-setup.html"
+      }
+    ]
+  },
+  {
+    "id": "vue-defineexpose",
+    "name": "Do czego sluzy defineExpose w Vue?",
+    "description": "Komponenty pisane w `<script setup>` sa domyslnie zamkniete dla rodzica, jesli ten probuje dostac sie do instancji przez template ref. `defineExpose` pozwala jawnie wystawic tylko wybrane pola i metody jako publiczne API komponentu.\n\n### Najwazniejsze punkty\n- bez `defineExpose` rodzic nie zobaczy zwyklych bindingow z `<script setup>`\n- to narzedzie do kontrolowanego API, a nie do obchodzenia props i emits wszedzie\n- najlepiej uzywac go oszczednie, gdy ref do komponentu faktycznie ma sens\n\n### Na rozmowie\nPowiedz, ze `defineExpose` sluzy do jawnego wystawiania publicznego interfejsu komponentu.",
+    "categories": ["vue"],
+    "images": [],
+    "links": [
+      {
+        "label": "Vue Docs: <script setup>",
+        "href": "https://vuejs.org/api/sfc-script-setup.html"
+      }
+    ]
+  },
+  {
+    "id": "vue-props-emits-communication",
+    "name": "Jak powinna wygladac komunikacja miedzy komponentami w Vue?",
+    "description": "Podstawowy model jest prosty: props down, events up. Rodzic przekazuje dane przez propsy, a dziecko komunikuje akcje przez emitowane eventy, zamiast mutowac stan rodzica bezposrednio.\n\n### Najwazniejsze punkty\n- props sa jednokierunkowe i nie powinny byc mutowane w dziecku\n- eventy komponentowe nie babelkuja jak natywne eventy DOM\n- przy glebszej komunikacji warto rozsadnie rozwazyc store albo provide/inject\n\n### Na rozmowie\nPowiedz, ze props i emits sa domyslnym, najczytelniejszym sposobem komunikacji parent-child.",
+    "categories": ["vue"],
+    "images": [],
+    "links": [
+      {
+        "label": "Vue Docs: Props",
+        "href": "https://vuejs.org/guide/components/props"
+      },
+      {
+        "label": "Vue Docs: Component Events",
+        "href": "https://vuejs.org/guide/components/events"
+      }
+    ]
+  },
+  {
+    "id": "vue-slots-scoped-slots",
+    "name": "Czym sa sloty i scoped slots w Vue?",
+    "description": "Sloty pozwalaja przekazac fragment template do komponentu potomnego i zdecydowac, gdzie ma zostac wyrenderowany. Scoped slots, czyli slot props, pozwalaja dodatkowo przekazac dane z dziecka do tresci slotu definiowanej po stronie rodzica.\n\n### Najwazniejsze punkty\n- sloty sa o kompozycji UI, nie o zwyklym przekazywaniu danych jak propsy\n- named slots porzadkuja bardziej zlozone layouty komponentu\n- slot props daja elastycznosc, ale latwo nimi przesadzic i utrudnic czytanie kodu\n\n### Na rozmowie\nPowiedz, ze sloty rozwiazuja problem reuzywalnego wrappera UI z wymienna zawartoscia.",
+    "categories": ["vue"],
+    "images": [],
+    "links": [
+      {
+        "label": "Vue Docs: Slots",
+        "href": "https://vuejs.org/guide/components/slots.html"
+      }
+    ]
+  },
+  {
+    "id": "vue-provide-inject",
+    "name": "Kiedy warto uzyc provide i inject w Vue?",
+    "description": "`provide` i `inject` pozwalaja przekazac dane lub zaleznosci przez drzewo komponentow bez recznego przekazywania propsow przez kazdy poziom. To dobre rozwiazanie dla zaleznosci przekrojowych, ale nie powinno zastapic czytelnej komunikacji tam, gdzie zwykle propsy sa wystarczajace.\n\n### Najwazniejsze punkty\n- rozwiazuje problem prop drillingu w glebszych drzewach\n- dobrze nadaje sie np. do contextu formularza, themingu albo pluginow\n- zbyt szerokie uzycie utrudnia sledzenie zrodla danych\n\n### Na rozmowie\nPowiedz, ze `provide/inject` to bardziej lokalny context niz pelnoprawny global state.",
+    "categories": ["vue"],
+    "images": [],
+    "links": [
+      {
+        "label": "Vue Docs: Provide / Inject",
+        "href": "https://vuejs.org/guide/components/provide-inject"
+      }
+    ]
+  },
+  {
+    "id": "vue-lifecycle-hooks",
+    "name": "Jakie lifecycle hooki w Vue sa najwazniejsze?",
+    "description": "Najczesciej w praktyce wracaja hooki zwiazane z montowaniem, aktualizacja i sprzataniem, czyli `onMounted`, `onUpdated` i `onUnmounted`. W Composition API hooki rejestrujesz jako funkcje, co dobrze pasuje do organizacji logiki w composables.\n\n### Najwazniejsze punkty\n- `onMounted` to dobry moment na operacje wymagajace DOM\n- `onUnmounted` sluzy do cleanupu, np. listenerow i timerow\n- warto rozumiec, ze hooki sa o lifecycle komponentu, a nie o reakcji na kazda zmiane danych\n\n### Na rozmowie\nPowiedz, ze dobry cleanup w `onUnmounted` jest tak samo wazny jak sama logika w `onMounted`.",
+    "categories": ["vue"],
+    "images": [],
+    "links": [
+      {
+        "label": "Vue Docs: Lifecycle Hooks",
+        "href": "https://vuejs.org/guide/essentials/lifecycle.html"
+      }
+    ]
+  },
+  {
+    "id": "vue-template-syntax-directives",
+    "name": "Jak dziala template syntax i dyrektywy w Vue?",
+    "description": "Template w Vue to HTML rozszerzony o reakcje na stan przez interpolacje i dyrektywy, takie jak `v-bind`, `v-on`, `v-if` czy `v-for`. Najwazniejsze jest to, ze template pozostaje deklaratywny, a bardziej zlozona logika powinna zostac przeniesiona do skryptu.\n\n### Najwazniejsze punkty\n- `{{ }}` sluzy do interpolacji tekstu\n- `:` to skrot `v-bind`, a `@` to skrot `v-on`\n- template powinien pozostac czytelny, a nie zamieniac sie w miejsce na cala logike biznesowa\n\n### Na rozmowie\nPowiedz, ze sila template Vue polega na prostym mapowaniu stanu na UI, bez recznej manipulacji DOM.",
+    "categories": ["vue"],
+    "images": [],
+    "links": [
+      {
+        "label": "Vue Docs: Template Syntax",
+        "href": "https://vuejs.org/guide/essentials/template-syntax.html"
+      }
+    ]
+  },
+  {
+    "id": "vue-conditional-list-rendering",
+    "name": "Jak dzialaja conditional rendering i list rendering w Vue?",
+    "description": "Vue daje do tego glownie `v-if`, `v-show` i `v-for`. Najczestsze pytanie rekrutacyjne dotyczy roznicy miedzy `v-if` i `v-show`: pierwsze realnie montuje i odmontowuje fragment, a drugie tylko przelacza widocznosc przez CSS.\n\n### Najwazniejsze punkty\n- `v-if` ma wyzszy koszt przelaczania, ale nizszy koszt poczatkowy\n- `v-show` jest dobre przy czestym toggle\n- przy `v-for` trzeba pamietac o stabilnym `key`\n\n### Na rozmowie\nPowiedz, ze wybor miedzy `v-if` i `v-show` to glownie trade-off miedzy kosztem initial renderu a kosztem przelaczania.",
+    "categories": ["vue"],
+    "images": [],
+    "links": [
+      {
+        "label": "Vue Docs: Conditional Rendering",
+        "href": "https://vuejs.org/guide/essentials/conditional"
+      },
+      {
+        "label": "Vue Docs: List Rendering",
+        "href": "https://vuejs.org/guide/essentials/list"
+      }
+    ]
+  },
+  {
+    "id": "vue-v-model-custom",
+    "name": "Jak dziala v-model i custom v-model w Vue?",
+    "description": "`v-model` to wygodny skrot do dwukierunkowego bindowania wartosci miedzy rodzicem a formularzem albo komponentem. Wlasny komponent moze wspierac `v-model`, jesli wystawia odpowiedni kontrakt, a w nowszym Vue wygodnie robi sie to przez `defineModel` albo klasyczny duet prop plus emit update.\n\n### Najwazniejsze punkty\n- dla natywnych inputow `v-model` synchronizuje wartosc z reactywnym stanem\n- dla komponentow to tylko umowne API, nie magia\n- custom `v-model` czesto pojawia sie w bibliotekach formularzy i design systemach\n\n### Na rozmowie\nPowiedz, ze `v-model` na komponencie to po prostu ustalony sposob komunikacji parent-child.",
+    "categories": ["vue"],
+    "images": [],
+    "links": [
+      {
+        "label": "Vue Docs: Component v-model",
+        "href": "https://vuejs.org/guide/components/v-model.html"
+      }
+    ]
+  },
+  {
+    "id": "vue-nexttick",
+    "name": "Do czego sluzy nextTick w Vue?",
+    "description": "`nextTick` pozwala poczekac, az Vue wypchnie zaplanowane aktualizacje DOM. To przydatne wtedy, gdy po zmianie stanu chcesz od razu odczytac lub zmodyfikowac juz zaktualizowany DOM, np. ustawic focus albo policzyc rozmiar elementu.\n\n### Najwazniejsze punkty\n- zmiana stanu nie oznacza natychmiast gotowego DOM w tej samej linijce\n- `nextTick` przydaje sie glownie przy integracji z DOM API\n- naduzywanie `nextTick` bywa sygnalem, ze komponent ma zbyt imperative flow\n\n### Na rozmowie\nPowiedz, ze `nextTick` jest o synchronizacji z cyklem aktualizacji DOM, a nie o opoznianiu kodu dla samego opoznienia.",
+    "categories": ["vue"],
+    "images": [],
+    "links": [
+      {
+        "label": "Vue Docs: nextTick()",
+        "href": "https://vuejs.org/api/general.html#nexttick"
+      }
+    ]
+  },
+  {
+    "id": "vue-async-components",
+    "name": "Czym sa async components w Vue?",
+    "description": "Async component pozwala doladowac definicje komponentu dopiero wtedy, gdy jest potrzebna. To praktyczny mechanizm code splittingu na poziomie komponentu i czesto laczy sie z dynamic importem.\n\n### Najwazniejsze punkty\n- zmniejsza koszt startowy aplikacji\n- dobrze pasuje do ciezkich widokow, modalow i rzadko uzywanych sekcji\n- trzeba pamietac o UX, np. fallbacku loading albo obsludze bledu\n\n### Na rozmowie\nPowiedz, ze async components to vue-owy sposob na lazy loading komponentow, a nie osobny typ komponentu biznesowo.",
+    "categories": ["vue"],
+    "images": [],
+    "links": [
+      {
+        "label": "Vue Docs: Async Components",
+        "href": "https://vuejs.org/guide/components/async.html"
+      }
+    ]
+  },
+  {
+    "id": "vue-keep-alive",
+    "name": "Do czego sluzy keep-alive w Vue?",
+    "description": "`<KeepAlive>` cache'uje instancje dynamicznie przelaczanych komponentow zamiast je odmontowywac. Dzieki temu po powrocie zachowujesz ich stan, co bywa bardzo przydatne np. przy tabach albo widokach formularzy.\n\n### Najwazniejsze punkty\n- bez `KeepAlive` przelaczany komponent zwykle traci lokalny stan po unmount\n- mozna sterowac cache przez `include`, `exclude` i `max`\n- komponent cached ma dodatkowe hooki `onActivated` i `onDeactivated`\n\n### Na rozmowie\nPowiedz, ze `KeepAlive` sluzy do zachowania stanu instancji, a nie do zwyklego pokazywania i ukrywania elementu.",
+    "categories": ["vue"],
+    "images": [],
+    "links": [
+      {
+        "label": "Vue Docs: KeepAlive",
+        "href": "https://vuejs.org/guide/built-ins/keep-alive.html"
+      }
+    ]
+  },
+  {
+    "id": "vue-router-navigation-guards",
+    "name": "Do czego sluza navigation guards w Vue Router?",
+    "description": "Navigation guards pozwalaja przechwycic przejscie miedzy trasami i zdecydowac, czy je puscic dalej, zablokowac albo przekierowac. Najczesciej uzywa sie ich do auth, ochrony przed wyjsciem z niezapisanymi zmianami albo do prostych kontroli dostepu.\n\n### Najwazniejsze punkty\n- guard moze byc globalny, per-route albo w komponencie\n- guard nie powinien zamieniac sie w miejsce na cala logike biznesowa aplikacji\n- latwo tu zrobic petle redirectow, jesli warunki sa zle ulozone\n\n### Na rozmowie\nPowiedz, ze guards sa do kontroli nawigacji, a nie do ladowania calego swiata przy kazdym przejsciu.",
+    "categories": ["vue"],
+    "images": [],
+    "links": [
+      {
+        "label": "Vue Router Docs: Navigation Guards",
+        "href": "https://router.vuejs.org/guide/advanced/navigation-guards.html"
+      }
+    ]
+  },
+  {
+    "id": "pinia-basics",
+    "name": "Czym jest Pinia i kiedy po nia siega sie w Vue?",
+    "description": "Pinia to oficjalne rozwiazanie do zarzadzania globalnym stanem w ekosystemie Vue. Siega sie po nia wtedy, gdy stan przestaje byc lokalny dla pojedynczego komponentu i zaczyna byc wspoldzielony przez rozne czesci aplikacji.\n\n### Najwazniejsze punkty\n- store w Pinia sklada sie glownie ze state, getters i actions\n- Pinia dobrze wspolpracuje z Composition API i TypeScript\n- nie kazdy stan musi trafic do store'a, bo nadmiar globalnego stanu tez komplikuje aplikacje\n\n### Na rozmowie\nPowiedz, ze Pinia nie zastapi zdrowego podzialu odpowiedzialnosci, ale dobrze rozwiazuje problem wspoldzielonego state.",
+    "categories": ["vue"],
+    "images": [],
+    "links": [
+      {
+        "label": "Pinia Docs: State",
+        "href": "https://pinia.vuejs.org/core-concepts/state"
+      },
+      {
+        "label": "Pinia Docs: Getters",
+        "href": "https://pinia.vuejs.org/core-concepts/getters.html"
+      },
+      {
+        "label": "Pinia Docs: Actions",
+        "href": "https://pinia.vuejs.org/core-concepts/actions"
+      }
+    ]
+  },
+  {
+    "id": "nuxt-basics",
+    "name": "Czym jest Nuxt i co daje ponad czyste Vue?",
+    "description": "Nuxt to framework zbudowany na Vue, ktory dodaje gotowe konwencje i narzedzia pod budowe pelniejszych aplikacji. Daje m.in. file-based routing, SSR, auto-importy, data fetching i sensowna strukture projektu bez recznego skladania wszystkiego od zera.\n\n### Najwazniejsze punkty\n- Nuxt automatyzuje sporo rzeczy, ktore w czystym Vue sklasz sam\n- dobrze sprawdza sie tam, gdzie wazne sa SSR, SEO albo wygodne konwencje aplikacyjne\n- to dalej jest Vue, ale z dodatkowa warstwa frameworka i narzuconymi patternami\n\n### Na rozmowie\nPowiedz, ze Nuxt nie zmienia podstaw Vue, tylko buduje nad nimi bardziej kompletne srodowisko aplikacyjne.",
+    "categories": ["vue"],
+    "images": [],
+    "links": [
+      {
+        "label": "Nuxt Docs: Guide",
+        "href": "https://nuxt.com/docs/guide"
+      },
+      {
+        "label": "Nuxt Docs: Rendering Modes",
+        "href": "https://nuxt.com/docs/3.x/guide/concepts/rendering"
+      }
+    ]
+  },
+  {
+    "id": "nuxt-hydration-mismatch",
+    "name": "Czym jest hydration mismatch w Nuxt i skad sie bierze?",
+    "description": "Hydration mismatch pojawia sie wtedy, gdy HTML wyrenderowany na serwerze nie zgadza sie z tym, co Vue probuje odtworzyc po stronie klienta. Typowe przyczyny to uzycie browser-only API na serwerze, losowe wartosci generowane w renderze albo rozne dane po stronie SSR i klienta.\n\n### Najwazniejsze punkty\n- to nie jest tylko warning kosmetyczny, bo moze psuc interaktywnosc i UX\n- najczesciej problem wynika z mieszania logiki server/client bez kontroli kontekstu\n- w Nuxt trzeba uwazac m.in. na `window`, `localStorage`, daty i losowe ID w renderze\n\n### Na rozmowie\nPowiedz, ze hydration mismatch to sygnal, ze server i client wyrenderowaly rozny wynik dla tego samego widoku.",
+    "categories": ["vue"],
+    "images": [],
+    "links": [
+      {
+        "label": "Nuxt Docs: Nuxt and hydration",
+        "href": "https://nuxt.com/docs/4.x/guide/best-practices/hydration"
+      }
+    ]
+  },
+  {
+    "id": "vue-router",
+    "name": "Czym jest Vue Router i do czego sluzy?",
+    "description": "Vue Router to oficjalna biblioteka do obslugi routingu w aplikacjach Vue, szczegolnie SPA. Pozwala mapowac adres URL na konkretny widok i sterowac nawigacja bez pelnego przeladowania strony.\n\n### Najwazniejsze punkty\n- definiuje trasy, np. `/login`, `/users/:id`, i podpina je do komponentow\n- obsluguje parametry, nested routes, przekierowania i guards, np. przed wejsciem na trase\n- wspiera `history mode`, dzieki czemu URL wyglada bardziej naturalnie niz przy hash routing\n- `router-link` sluzy do przechodzenia miedzy widokami, a `router-view` renderuje aktywna trase\n\n### Na rozmowie\nWarto powiedziec, ze Vue Router rozwiazuje problem nawigacji w SPA i czesto laczy sie go z auth guardami oraz lazy loadingiem widokow.",
+    "categories": ["vue"],
+    "images": [],
+    "links": [
+      {
+        "label": "Vue Router Docs: Getting Started",
+        "href": "https://router.vuejs.org/guide/"
+      }
+    ]
+  }
+]
