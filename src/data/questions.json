@@ -1122,6 +1122,27 @@
     "links": []
   },
   {
+    "id": "jwt-access-refresh-tokens",
+    "name": "Jak w praktyce pracuje sie z JWT, access tokenem i refresh tokenem?",
+    "description": "JWT to format tokena, a nie caly mechanizm auth. W praktyce do autoryzowanych requestow wysylasz krotkozyjacy access token, najczesciej w naglowku `Authorization: Bearer ...`, a refresh token sluzy tylko do pobrania nowego access tokenu po wygasnieciu starego.\n\n### Najwazniejsze punkty\n- gdy access token wygasa, zwykle probujesz raz zrobic refresh i ponawiasz oryginalny request; jesli refresh sie nie uda, wylogowujesz uzytkownika i czyscisz stan sesji\n- access token najlepiej trzymac w pamieci aplikacji, a refresh token w `HttpOnly`, `Secure`, `SameSite` cookie, bo JavaScript nie ma do niego bezposredniego dostepu\n- trzymanie dlugozyjacych tokenow w `localStorage` albo `sessionStorage` jest wygodne, ale zwieksza ryzyko przy XSS\n- access token daje dostep do API tu i teraz, a refresh token sluzy do odnowienia sesji i powinien byc bardziej chroniony\n\n### Na rozmowie\nPowiedz, ze najwazniejsze sa rola obu tokenow, bezpieczne miejsce przechowywania i poprawny flow odswiezania po wygaśnieciu access tokenu.",
+    "categories": ["other"],
+    "images": [],
+    "links": [
+      {
+        "label": "RFC 7519: JSON Web Token (JWT)",
+        "href": "https://datatracker.ietf.org/doc/html/rfc7519"
+      },
+      {
+        "label": "MDN: Authorization header",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Authorization"
+      },
+      {
+        "label": "OWASP: JSON Web Token Cheat Sheet",
+        "href": "https://cheatsheetseries.owasp.org/cheatsheets/JSON_Web_Token_for_Java_Cheat_Sheet.html"
+      }
+    ]
+  },
+  {
     "id": "same-origin-policy",
     "name": "Czym jest same-origin policy?",
     "description": "Same-origin policy to podstawowa zasada bezpieczenstwa przegladarki, ktora ogranicza dostep skryptu do zasobow z innego originu. Origin oznacza kombinacje protokolu, hosta i portu, wiec roznica w ktorymkolwiek z tych elementow robi inny origin.\n\n### Najwazniejsze punkty\n- SOP blokuje np. swobodny odczyt danych z innej domeny przez JavaScript\n- CORS jest kontrolowanym wyjatkiem od tego ograniczenia\n- to jedna z glownych przyczyn, dla ktorych frontend nie moze po prostu sterowac obca karta czy sesja z innej domeny\n\n### Na rozmowie\nPowiedz, ze same-origin policy chroni uzytkownika przed mieszaniem danych i uprawnien miedzy roznych originami.",

@@ -4,6 +4,7 @@ import remarkGfm from "remark-gfm";
 import seedQuestions from "./data/questions.json";
 
 const geminiApiKey = import.meta.env.VITE_GEMINI_API_KEY;
+const questionFlagsStorageKey = "questions-app-question-flags";
 const allowedCategories = [
   "html",
   "css",
@@ -60,7 +61,41 @@ function buildAiCoachPrompt(areaName, scope) {
   ].join("\n");
 }
 
-const aiCoachPrompts = [
+function buildQuestionScopedPromptEntry({
+  id,
+  label,
+  emptyLabel,
+  areaName,
+  questions,
+}) {
+  const scope = questions.map(
+    (question) => `${question.name} [${question.categories.join(", ")}]`,
+  );
+
+  if (!scope.length) {
+    return {
+      id,
+      label,
+      description: `Na razie nie ma pytan oznaczonych jako ${emptyLabel}.`,
+      scope: [
+        `Oznacz pytania jako ${emptyLabel} w widoku listy, a ten prompt zbuduje sie automatycznie.`,
+      ],
+      prompt: `Najpierw oznacz w aplikacji pytania jako ${emptyLabel}, a potem skopiuj ten prompt.`,
+      isAvailable: false,
+    };
+  }
+
+  return {
+    id,
+    label,
+    description: `Generowane automatycznie z ${questions.length} pytan oznaczonych jako ${emptyLabel}. Agent pyta tylko z tej puli.`,
+    scope,
+    prompt: buildAiCoachPrompt(areaName, scope),
+    isAvailable: true,
+  };
+}
+
+const staticAiCoachPrompts = [
   {
     id: "html-css",
     label: "HTML + CSS",
@@ -119,7 +154,10 @@ const aiCoachPrompts = [
   },
 ].map((entry) => ({
   ...entry,
-  prompt: buildAiCoachPrompt(entry.label, entry.scope),
+  prompt: buildAiCoachPrompt(
+    entry.promptAreaName ?? entry.label,
+    entry.scope,
+  ),
 }));
 
 function slugify(value) {
@@ -238,11 +276,51 @@ function normalizeLink(link) {
 function normalizeQuestion(question) {
   return {
     ...question,
+    isImportant: Boolean(question.isImportant),
+    isHard: Boolean(question.isHard),
     images: (question.images ?? [])
       .map((image, index) => normalizeImage(image, index))
       .filter(Boolean),
     links: (question.links ?? []).map(normalizeLink).filter(Boolean),
   };
+}
+
+function loadStoredQuestionFlags() {
+  if (typeof window === "undefined") {
+    return {};
+  }
+
+  try {
+    const rawFlags = window.localStorage.getItem(questionFlagsStorageKey);
+
+    if (!rawFlags) {
+      return {};
+    }
+
+    const parsedFlags = JSON.parse(rawFlags);
+    return parsedFlags && typeof parsedFlags === "object" ? parsedFlags : {};
+  } catch {
+    return {};
+  }
+}
+
+function loadInitialQuestions() {
+  const storedFlags = loadStoredQuestionFlags();
+
+  return seedQuestions.map((question) => {
+    const normalizedQuestion = normalizeQuestion(question);
+    const storedQuestionFlags = storedFlags[normalizedQuestion.id];
+
+    if (!storedQuestionFlags) {
+      return normalizedQuestion;
+    }
+
+    return {
+      ...normalizedQuestion,
+      isImportant: Boolean(storedQuestionFlags.isImportant),
+      isHard: Boolean(storedQuestionFlags.isHard),
+    };
+  });
 }
 
 function buildQuestionObject(formState) {
@@ -411,6 +489,8 @@ function ImageViewer({ image, index, total, onClose, onNext, onPrevious }) {
 }
 
 function PromptCard({ promptEntry, copyStatus, onCopy }) {
+  const isCopyDisabled = promptEntry.isAvailable === false;
+
   return (
     <article className="prompt-card">
       <div className="prompt-card__header">
@@ -422,9 +502,12 @@ function PromptCard({ promptEntry, copyStatus, onCopy }) {
         <button
           type="button"
           className="primary-button"
+          disabled={isCopyDisabled}
           onClick={() => onCopy(promptEntry.id, promptEntry.prompt)}
         >
-          {copyStatus === "copied"
+          {isCopyDisabled
+            ? "Brak pytan"
+            : copyStatus === "copied"
             ? "Skopiowano"
             : copyStatus === "failed"
               ? "Sprobuj ponownie"
@@ -451,12 +534,66 @@ function PromptCard({ promptEntry, copyStatus, onCopy }) {
   );
 }
 
+function StatusPill({ active, label, tone, onClick }) {
+  const className = `status-pill status-pill--${tone} ${active ? "is-active" : ""}`;
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        className={className}
+        onClick={onClick}
+        aria-pressed={active}
+      >
+        {label}
+      </button>
+    );
+  }
+
+  return <span className={className}>{label}</span>;
+}
+
+function QuestionStatusControls({ question, onToggleFlag }) {
+  return (
+    <div className="status-controls" aria-label="Znaczniki pytania">
+      <StatusPill
+        active={question.isImportant}
+        label="Wazne"
+        tone="important"
+        onClick={() => onToggleFlag(question.id, "isImportant")}
+      />
+      <StatusPill
+        active={question.isHard}
+        label="Trudne"
+        tone="hard"
+        onClick={() => onToggleFlag(question.id, "isHard")}
+      />
+    </div>
+  );
+}
+
+function QuestionStatusBadges({ question }) {
+  if (!question.isImportant && !question.isHard) {
+    return null;
+  }
+
+  return (
+    <div className="status-badges" aria-label="Aktywne znaczniki pytania">
+      {question.isImportant && (
+        <StatusPill active label="Wazne" tone="important" />
+      )}
+      {question.isHard && <StatusPill active label="Trudne" tone="hard" />}
+    </div>
+  );
+}
+
 function QuestionCard({
   question,
   isExpanded,
   onAskAi,
   onOpenImageViewer,
   onToggle,
+  onToggleFlag,
 }) {
   return (
     <article className={`question-card ${isExpanded ? "is-expanded" : ""}`}>
@@ -472,6 +609,11 @@ function QuestionCard({
               </span>
             ))}
           </div>
+
+          <QuestionStatusControls
+            question={question}
+            onToggleFlag={onToggleFlag}
+          />
         </div>
 
         <div className="question-card__actions">
@@ -517,12 +659,14 @@ function QuestionCard({
 
 export default function App() {
   const [activeView, setActiveView] = useState("list");
-  const [questions, setQuestions] = useState(() =>
-    seedQuestions.map(normalizeQuestion),
-  );
+  const [questions, setQuestions] = useState(loadInitialQuestions);
   const [selectedCategory, setSelectedCategory] = useState("Wszystkie");
   const [search, setSearch] = useState("");
   const [flashcardIndex, setFlashcardIndex] = useState(0);
+  const [flashcardFilters, setFlashcardFilters] = useState({
+    importantOnly: false,
+    hardOnly: false,
+  });
   const [showAnswer, setShowAnswer] = useState(false);
   const [formState, setFormState] = useState(initialForm);
   const [copyState, setCopyState] = useState("idle");
@@ -563,7 +707,37 @@ export default function App() {
     return matchesCategory && matchesSearch;
   });
 
-  const flashcard = filteredQuestions[flashcardIndex] ?? null;
+  const promptEntries = [
+    buildQuestionScopedPromptEntry({
+      id: "important",
+      label: "Wazne",
+      emptyLabel: "wazne",
+      areaName: "pytan oznaczonych jako wazne w mojej aplikacji",
+      questions: questions.filter((question) => question.isImportant),
+    }),
+    buildQuestionScopedPromptEntry({
+      id: "hard",
+      label: "Trudne",
+      emptyLabel: "trudne",
+      areaName: "pytan oznaczonych jako trudne w mojej aplikacji",
+      questions: questions.filter((question) => question.isHard),
+    }),
+    ...staticAiCoachPrompts,
+  ];
+
+  const flashcardQuestions = filteredQuestions.filter((question) => {
+    if (flashcardFilters.importantOnly && !question.isImportant) {
+      return false;
+    }
+
+    if (flashcardFilters.hardOnly && !question.isHard) {
+      return false;
+    }
+
+    return true;
+  });
+
+  const flashcard = flashcardQuestions[flashcardIndex] ?? null;
   const previewObject = withUniqueId(buildQuestionObject(formState), questions);
   const previewJson = JSON.stringify(previewObject, null, 2);
   const canSubmit =
@@ -572,14 +746,47 @@ export default function App() {
     previewObject.categories.length > 0;
 
   useEffect(() => {
-    if (flashcardIndex > filteredQuestions.length - 1) {
+    if (flashcardIndex > flashcardQuestions.length - 1) {
       setFlashcardIndex(0);
     }
-  }, [filteredQuestions.length, flashcardIndex]);
+  }, [flashcardQuestions.length, flashcardIndex]);
 
   useEffect(() => {
     setShowAnswer(false);
-  }, [activeView, flashcardIndex, selectedCategory, search]);
+  }, [
+    activeView,
+    flashcardIndex,
+    selectedCategory,
+    search,
+    flashcardFilters.importantOnly,
+    flashcardFilters.hardOnly,
+  ]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const flagsByQuestionId = questions.reduce((accumulator, question) => {
+      if (question.isImportant || question.isHard) {
+        accumulator[question.id] = {
+          isImportant: question.isImportant,
+          isHard: question.isHard,
+        };
+      }
+
+      return accumulator;
+    }, {});
+
+    try {
+      window.localStorage.setItem(
+        questionFlagsStorageKey,
+        JSON.stringify(flagsByQuestionId),
+      );
+    } catch {
+      // Ignore local persistence errors and keep the in-memory state.
+    }
+  }, [questions]);
 
   useEffect(() => {
     if (!aiQuestion && !imageViewer) {
@@ -688,37 +895,45 @@ export default function App() {
   }
 
   function showPreviousFlashcard() {
-    if (!filteredQuestions.length) {
+    if (!flashcardQuestions.length) {
       return;
     }
 
     setFlashcardIndex((current) =>
-      current === 0 ? filteredQuestions.length - 1 : current - 1,
+      current === 0 ? flashcardQuestions.length - 1 : current - 1,
     );
   }
 
   function showNextFlashcard() {
-    if (!filteredQuestions.length) {
+    if (!flashcardQuestions.length) {
       return;
     }
 
     setFlashcardIndex((current) =>
-      current === filteredQuestions.length - 1 ? 0 : current + 1,
+      current === flashcardQuestions.length - 1 ? 0 : current + 1,
     );
   }
 
   function drawRandomFlashcard() {
-    if (filteredQuestions.length <= 1) {
+    if (flashcardQuestions.length <= 1) {
       return;
     }
 
     const randomOffset = Math.floor(
-      Math.random() * (filteredQuestions.length - 1),
+      Math.random() * (flashcardQuestions.length - 1),
     );
     const nextIndex =
       randomOffset >= flashcardIndex ? randomOffset + 1 : randomOffset;
 
     setFlashcardIndex(nextIndex);
+  }
+
+  function toggleFlashcardFilter(filterKey) {
+    setFlashcardFilters((current) => ({
+      ...current,
+      [filterKey]: !current[filterKey],
+    }));
+    setFlashcardIndex(0);
   }
 
   function toggleQuestion(questionId) {
@@ -733,6 +948,16 @@ export default function App() {
 
       return next;
     });
+  }
+
+  function toggleQuestionFlag(questionId, flagKey) {
+    setQuestions((current) =>
+      current.map((question) =>
+        question.id === questionId
+          ? { ...question, [flagKey]: !question[flagKey] }
+          : question,
+      ),
+    );
   }
 
   function openAiModal(question) {
@@ -934,6 +1159,7 @@ export default function App() {
                     onAskAi={openAiModal}
                     onOpenImageViewer={openImageViewer}
                     onToggle={toggleQuestion}
+                    onToggleFlag={toggleQuestionFlag}
                   />
                 ))
               ) : (
@@ -963,10 +1189,28 @@ export default function App() {
                   type="button"
                   className="primary-button flashcard-meta__button"
                   onClick={drawRandomFlashcard}
-                  disabled={filteredQuestions.length <= 1}
+                  disabled={flashcardQuestions.length <= 1}
                 >
                   Losuj
                 </button>
+              </div>
+
+              <div className="flashcard-meta__filters">
+                <p className="side-panel__label">Filtruj pule kart</p>
+                <div className="status-filter-group">
+                  <StatusPill
+                    active={flashcardFilters.importantOnly}
+                    label="Tylko wazne"
+                    tone="important"
+                    onClick={() => toggleFlashcardFilter("importantOnly")}
+                  />
+                  <StatusPill
+                    active={flashcardFilters.hardOnly}
+                    label="Tylko trudne"
+                    tone="hard"
+                    onClick={() => toggleFlashcardFilter("hardOnly")}
+                  />
+                </div>
               </div>
             </div>
 
@@ -974,7 +1218,7 @@ export default function App() {
               <article className={`flashcard ${showAnswer ? "is-revealed" : ""}`}>
                 <div className="flashcard__face">
                   <p className="flashcard__counter">
-                    {flashcardIndex + 1} / {filteredQuestions.length}
+                    {flashcardIndex + 1} / {flashcardQuestions.length}
                   </p>
                   <div className="tag-row">
                     {flashcard.categories.map((category) => (
@@ -983,6 +1227,7 @@ export default function App() {
                       </span>
                     ))}
                   </div>
+                  <QuestionStatusBadges question={flashcard} />
                   <h3>{flashcard.name}</h3>
                   {showAnswer ? (
                     <>
@@ -1026,8 +1271,9 @@ export default function App() {
               <article className="empty-state">
                 <h3>Nie ma kart do wyswietlenia</h3>
                 <p>
-                  Ten widok korzysta z aktualnych filtrow. Dodaj pytania albo
-                  rozszerz zakres filtrowania.
+                  Ten widok korzysta z aktualnych filtrow kategorii, wyszukiwania
+                  oraz znacznikow `Wazne` i `Trudne`. Rozszerz filtry albo oznacz
+                  wiecej pytan.
                 </p>
               </article>
             )}
@@ -1042,13 +1288,14 @@ export default function App() {
               <p>
                 Wklej prompt do ChatGPT, Gemini albo innego agenta i potraktuj
                 go jak rozmowe techniczna. Kazdy prompt pilnuje scope, wymaga
-                uczciwej oceny odpowiedzi i ma utrwalac wiedze, a nie tylko
-                podawac definicje.
+                poprawiania odpowiedzi i ma utrwalac wiedze, a nie tylko podawac
+                definicje. Prompty `Wazne` i `Trudne` buduja sie automatycznie z
+                pytan oznaczonych w aplikacji.
               </p>
             </article>
 
             <div className="prompt-grid">
-              {aiCoachPrompts.map((promptEntry) => {
+              {promptEntries.map((promptEntry) => {
                 const copyStatus =
                   promptCopyState.id === promptEntry.id
                     ? promptCopyState.status

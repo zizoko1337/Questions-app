@@ -231,6 +231,48 @@ pre {
   color: #dfe6f5;
 }
 
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #dfe6f5;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+button.status-pill:hover {
+  transform: translateY(-1px);
+}
+
+.status-pill--important {
+  border-color: rgba(244, 179, 93, 0.34);
+  color: #ffd57a;
+}
+
+.status-pill--hard {
+  border-color: rgba(255, 107, 107, 0.34);
+  color: #ff9d9d;
+}
+
+.status-pill--important.is-active {
+  background: #f4b35d;
+  border-color: #f4b35d;
+  color: #0b1527;
+}
+
+.status-pill--hard.is-active {
+  background: #ff6b6b;
+  border-color: #ff6b6b;
+  color: #fff4f4;
+}
+
 .filter-pill.is-active {
   background: #6dd3ce;
   color: #0b1527;
@@ -261,6 +303,22 @@ pre {
 
 .question-card__header {
   min-width: 0;
+}
+
+.status-controls,
+.status-badges,
+.status-filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.status-controls {
+  margin-top: 14px;
+}
+
+.status-badges {
+  margin-bottom: 18px;
 }
 
 .question-card__eyebrow {
@@ -524,6 +582,12 @@ pre {
   margin-top: 18px;
 }
 
+.flashcard-meta__filters {
+  display: grid;
+  gap: 12px;
+  margin-top: 22px;
+}
+
 .flashcard-meta__button {
   padding: 13px 18px;
   border-radius: 999px;
@@ -570,6 +634,11 @@ pre {
 .flashcard-controls .primary-button {
   background: linear-gradient(135deg, #f4b35d 0%, #ffde95 100%);
   color: #0b1527;
+}
+
+.primary-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .editor-panel,
