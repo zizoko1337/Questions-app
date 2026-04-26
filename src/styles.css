@@ -261,6 +261,11 @@ button.status-pill:hover {
   color: #ff9d9d;
 }
 
+.status-pill--learned {
+  border-color: rgba(100, 214, 154, 0.34);
+  color: #9df2c0;
+}
+
 .status-pill--important.is-active {
   background: #f4b35d;
   border-color: #f4b35d;
@@ -273,6 +278,12 @@ button.status-pill:hover {
   color: #fff4f4;
 }
 
+.status-pill--learned.is-active {
+  background: #64d69a;
+  border-color: #64d69a;
+  color: #082217;
+}
+
 .filter-pill.is-active {
   background: #6dd3ce;
   color: #0b1527;
@@ -281,6 +292,30 @@ button.status-pill:hover {
 .question-list {
   display: grid;
   gap: 18px;
+}
+
+.status-surface {
+  position: relative;
+  isolation: isolate;
+  border-color: transparent;
+}
+
+.status-surface::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: var(--status-border);
+  pointer-events: none;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
 }
 
 .question-card {

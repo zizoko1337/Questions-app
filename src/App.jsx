@@ -32,6 +32,14 @@ const initialForm = {
   links: "",
 };
 
+const neutralQuestionBorder =
+  "linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.12))";
+const questionStatusBorderColors = {
+  important: "rgba(244, 179, 93, 0.95)",
+  hard: "rgba(255, 107, 107, 0.95)",
+  learned: "rgba(100, 214, 154, 0.95)",
+};
+
 function buildAiCoachPrompt(areaName, scope) {
   return [
     `Chce przeprowadzic z Toba techniczna rozmowe cwiczeniowa z zakresu ${areaName}.`,
@@ -278,6 +286,7 @@ function normalizeQuestion(question) {
     ...question,
     isImportant: Boolean(question.isImportant),
     isHard: Boolean(question.isHard),
+    isLearned: Boolean(question.isLearned),
     images: (question.images ?? [])
       .map((image, index) => normalizeImage(image, index))
       .filter(Boolean),
@@ -319,6 +328,7 @@ function loadInitialQuestions() {
       ...normalizedQuestion,
       isImportant: Boolean(storedQuestionFlags.isImportant),
       isHard: Boolean(storedQuestionFlags.isHard),
+      isLearned: Boolean(storedQuestionFlags.isLearned),
     };
   });
 }
@@ -336,6 +346,30 @@ function buildQuestionObject(formState) {
     categories,
     ...(images.length ? { images } : {}),
     ...(links.length ? { links } : {}),
+  };
+}
+
+function getQuestionStatusBorderStyle(question) {
+  const colors = [];
+
+  if (question.isImportant) {
+    colors.push(questionStatusBorderColors.important);
+  }
+
+  if (question.isHard) {
+    colors.push(questionStatusBorderColors.hard);
+  }
+
+  if (question.isLearned) {
+    colors.push(questionStatusBorderColors.learned);
+  }
+
+  const borderGradient = colors.length
+    ? `linear-gradient(135deg, ${colors.join(", ")})`
+    : neutralQuestionBorder;
+
+  return {
+    "--status-border": borderGradient,
   };
 }
 
@@ -568,12 +602,18 @@ function QuestionStatusControls({ question, onToggleFlag }) {
         tone="hard"
         onClick={() => onToggleFlag(question.id, "isHard")}
       />
+      <StatusPill
+        active={question.isLearned}
+        label="Nauczone"
+        tone="learned"
+        onClick={() => onToggleFlag(question.id, "isLearned")}
+      />
     </div>
   );
 }
 
 function QuestionStatusBadges({ question }) {
-  if (!question.isImportant && !question.isHard) {
+  if (!question.isImportant && !question.isHard && !question.isLearned) {
     return null;
   }
 
@@ -583,6 +623,9 @@ function QuestionStatusBadges({ question }) {
         <StatusPill active label="Wazne" tone="important" />
       )}
       {question.isHard && <StatusPill active label="Trudne" tone="hard" />}
+      {question.isLearned && (
+        <StatusPill active label="Nauczone" tone="learned" />
+      )}
     </div>
   );
 }
@@ -596,7 +639,10 @@ function QuestionCard({
   onToggleFlag,
 }) {
   return (
-    <article className={`question-card ${isExpanded ? "is-expanded" : ""}`}>
+    <article
+      className={`question-card status-surface ${isExpanded ? "is-expanded" : ""}`}
+      style={getQuestionStatusBorderStyle(question)}
+    >
       <div className="question-card__summary">
         <div className="question-card__header">
           <p className="question-card__eyebrow">Pytanie</p>
@@ -666,6 +712,7 @@ export default function App() {
   const [flashcardFilters, setFlashcardFilters] = useState({
     importantOnly: false,
     hardOnly: false,
+    skipLearned: false,
   });
   const [showAnswer, setShowAnswer] = useState(false);
   const [formState, setFormState] = useState(initialForm);
@@ -734,6 +781,10 @@ export default function App() {
       return false;
     }
 
+    if (flashcardFilters.skipLearned && question.isLearned) {
+      return false;
+    }
+
     return true;
   });
 
@@ -760,6 +811,7 @@ export default function App() {
     search,
     flashcardFilters.importantOnly,
     flashcardFilters.hardOnly,
+    flashcardFilters.skipLearned,
   ]);
 
   useEffect(() => {
@@ -768,10 +820,11 @@ export default function App() {
     }
 
     const flagsByQuestionId = questions.reduce((accumulator, question) => {
-      if (question.isImportant || question.isHard) {
+      if (question.isImportant || question.isHard || question.isLearned) {
         accumulator[question.id] = {
           isImportant: question.isImportant,
           isHard: question.isHard,
+          isLearned: question.isLearned,
         };
       }
 
@@ -1210,12 +1263,21 @@ export default function App() {
                     tone="hard"
                     onClick={() => toggleFlashcardFilter("hardOnly")}
                   />
+                  <StatusPill
+                    active={flashcardFilters.skipLearned}
+                    label="Pomijaj nauczone"
+                    tone="learned"
+                    onClick={() => toggleFlashcardFilter("skipLearned")}
+                  />
                 </div>
               </div>
             </div>
 
             {flashcard ? (
-              <article className={`flashcard ${showAnswer ? "is-revealed" : ""}`}>
+              <article
+                className={`flashcard status-surface ${showAnswer ? "is-revealed" : ""}`}
+                style={getQuestionStatusBorderStyle(flashcard)}
+              >
                 <div className="flashcard__face">
                   <p className="flashcard__counter">
                     {flashcardIndex + 1} / {flashcardQuestions.length}
@@ -1272,8 +1334,8 @@ export default function App() {
                 <h3>Nie ma kart do wyswietlenia</h3>
                 <p>
                   Ten widok korzysta z aktualnych filtrow kategorii, wyszukiwania
-                  oraz znacznikow `Wazne` i `Trudne`. Rozszerz filtry albo oznacz
-                  wiecej pytan.
+                  oraz znacznikow `Wazne`, `Trudne` i `Nauczone`. Rozszerz filtry
+                  albo oznacz wiecej pytan.
                 </p>
               </article>
             )}
