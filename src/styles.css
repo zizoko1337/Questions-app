@@ -29,7 +29,8 @@ body {
 
 button,
 input,
-textarea {
+textarea,
+select {
   font: inherit;
 }
 
@@ -221,6 +222,51 @@ pre {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+}
+
+.speech-tools {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.speech-tools__controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(220px, 0.8fr);
+  gap: 14px;
+}
+
+.speech-field {
+  display: grid;
+  gap: 10px;
+}
+
+.speech-field span {
+  font-size: 0.88rem;
+  color: #cfd7e6;
+}
+
+.speech-field select,
+.speech-field input[type="range"] {
+  width: 100%;
+}
+
+.speech-field select {
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+  color: #f6f2e8;
+  outline: none;
+}
+
+.speech-field select:focus {
+  border-color: rgba(109, 211, 206, 0.8);
+  box-shadow: 0 0 0 3px rgba(109, 211, 206, 0.14);
+}
+
+.speech-field input[type="range"] {
+  accent-color: #6dd3ce;
 }
 
 .filter-pill,
@@ -943,6 +989,10 @@ button.status-pill:hover {
 
   .question-card__actions {
     justify-content: flex-start;
+  }
+
+  .speech-tools__controls {
+    grid-template-columns: 1fr;
   }
 
   .question-card,

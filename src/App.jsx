@@ -5,6 +5,7 @@ import seedQuestions from "./data/questions.json";
 
 const geminiApiKey = import.meta.env.VITE_GEMINI_API_KEY;
 const questionFlagsStorageKey = "questions-app-question-flags";
+const speechSettingsStorageKey = "questions-app-speech-settings";
 const allowedCategories = [
   "html",
   "css",
@@ -38,6 +39,10 @@ const questionStatusBorderColors = {
   important: "rgba(244, 179, 93, 0.95)",
   hard: "rgba(255, 107, 107, 0.95)",
   learned: "rgba(100, 214, 154, 0.95)",
+};
+const defaultSpeechSettings = {
+  voiceURI: "",
+  rate: 0.95,
 };
 
 function buildAiCoachPrompt(areaName, scope) {
@@ -313,6 +318,35 @@ function loadStoredQuestionFlags() {
   }
 }
 
+function loadStoredSpeechSettings() {
+  if (typeof window === "undefined") {
+    return defaultSpeechSettings;
+  }
+
+  try {
+    const rawSettings = window.localStorage.getItem(speechSettingsStorageKey);
+
+    if (!rawSettings) {
+      return defaultSpeechSettings;
+    }
+
+    const parsedSettings = JSON.parse(rawSettings);
+
+    return {
+      voiceURI:
+        typeof parsedSettings?.voiceURI === "string"
+          ? parsedSettings.voiceURI
+          : defaultSpeechSettings.voiceURI,
+      rate:
+        typeof parsedSettings?.rate === "number"
+          ? parsedSettings.rate
+          : defaultSpeechSettings.rate,
+    };
+  } catch {
+    return defaultSpeechSettings;
+  }
+}
+
 function loadInitialQuestions() {
   const storedFlags = loadStoredQuestionFlags();
 
@@ -347,6 +381,54 @@ function buildQuestionObject(formState) {
     ...(images.length ? { images } : {}),
     ...(links.length ? { links } : {}),
   };
+}
+
+function sortSpeechVoices(voices) {
+  return [...voices].sort((left, right) => {
+    const leftIsPolish = left.lang?.toLowerCase().startsWith("pl") ? 0 : 1;
+    const rightIsPolish = right.lang?.toLowerCase().startsWith("pl") ? 0 : 1;
+
+    if (leftIsPolish !== rightIsPolish) {
+      return leftIsPolish - rightIsPolish;
+    }
+
+    return `${left.name} ${left.lang}`.localeCompare(
+      `${right.name} ${right.lang}`,
+    );
+  });
+}
+
+function pickPreferredSpeechVoice(voices, selectedVoiceURI) {
+  if (!voices.length) {
+    return null;
+  }
+
+  const selectedVoice = voices.find((voice) => voice.voiceURI === selectedVoiceURI);
+
+  if (selectedVoice) {
+    return selectedVoice;
+  }
+
+  const polishVoices = voices.filter((voice) =>
+    voice.lang?.toLowerCase().startsWith("pl"),
+  );
+
+  const preferencePatterns = [
+    /natural/i,
+    /google/i,
+    /microsoft/i,
+    /online/i,
+  ];
+
+  for (const pattern of preferencePatterns) {
+    const matchedVoice = polishVoices.find((voice) => pattern.test(voice.name));
+
+    if (matchedVoice) {
+      return matchedVoice;
+    }
+  }
+
+  return polishVoices[0] ?? voices[0];
 }
 
 function getQuestionStatusBorderStyle(question) {
@@ -395,6 +477,59 @@ function MarkdownBlock({ content }) {
   return (
     <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
   );
+}
+
+function markdownToSpeechText(markdown) {
+  return markdown
+    .replace(/```[\s\S]*?```/g, "\nPrzyklad kodu.\n")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/!\[([^\]]*)\]\([^)]+\)/g, "$1")
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$1")
+    .replace(/^#{1,6}\s*/gm, "")
+    .replace(/^\s*[-*+]\s+/gm, "")
+    .replace(/^\s*\d+\.\s+/gm, "")
+    .replace(/\n{2,}/g, "\n")
+    .replace(/\n/g, ". ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function buildQuestionSpeechText(question) {
+  const parts = [question.name];
+
+  if (question.categories.length) {
+    parts.push(`Kategorie: ${question.categories.join(", ")}.`);
+  }
+
+  const descriptionText = markdownToSpeechText(question.description);
+
+  if (descriptionText) {
+    parts.push(descriptionText);
+  }
+
+  if (question.images.length) {
+    parts.push(
+      `Obrazy: ${question.images.map((image) => image.alt).join(". ")}.`,
+    );
+  }
+
+  return parts.join(" ");
+}
+
+function buildFlashcardSpeechText(question, showAnswer) {
+  if (!showAnswer) {
+    return [
+      question.name,
+      question.categories.length
+        ? `Kategorie: ${question.categories.join(", ")}.`
+        : "",
+      "Sprobuj odpowiedziec samodzielnie, a potem odslon tyl fiszki.",
+    ]
+      .filter(Boolean)
+      .join(" ");
+  }
+
+  return buildQuestionSpeechText(question);
 }
 
 function extractAnswerText(data) {
@@ -633,10 +768,13 @@ function QuestionStatusBadges({ question }) {
 function QuestionCard({
   question,
   isExpanded,
+  isSpeaking,
   onAskAi,
   onOpenImageViewer,
+  onToggleRead,
   onToggle,
   onToggleFlag,
+  speechSupported,
 }) {
   return (
     <article
@@ -673,6 +811,19 @@ function QuestionCard({
 
           <button
             type="button"
+            className="ghost-button"
+            onClick={() => onToggleRead(question)}
+            disabled={!speechSupported}
+          >
+            {speechSupported
+              ? isSpeaking
+                ? "Zatrzymaj"
+                : "Czytaj"
+              : "Czytanie niedostepne"}
+          </button>
+
+          <button
+            type="button"
             className={`chevron-button ${isExpanded ? "is-expanded" : ""}`}
             onClick={() => onToggle(question.id)}
             aria-expanded={isExpanded}
@@ -704,6 +855,10 @@ function QuestionCard({
 }
 
 export default function App() {
+  const speechSupported =
+    typeof window !== "undefined" &&
+    "speechSynthesis" in window &&
+    "SpeechSynthesisUtterance" in window;
   const [activeView, setActiveView] = useState("list");
   const [questions, setQuestions] = useState(loadInitialQuestions);
   const [selectedCategory, setSelectedCategory] = useState("Wszystkie");
@@ -721,6 +876,8 @@ export default function App() {
     id: "",
     status: "idle",
   });
+  const [speechSettings, setSpeechSettings] = useState(loadStoredSpeechSettings);
+  const [availableVoices, setAvailableVoices] = useState([]);
   const [formMessage, setFormMessage] = useState("");
   const [expandedQuestions, setExpandedQuestions] = useState(() => new Set());
   const [aiQuestion, setAiQuestion] = useState(null);
@@ -729,6 +886,7 @@ export default function App() {
   const [aiError, setAiError] = useState("");
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [imageViewer, setImageViewer] = useState(null);
+  const [activeSpeechId, setActiveSpeechId] = useState("");
 
   const allCategories = [
     "Wszystkie",
@@ -901,6 +1059,68 @@ export default function App() {
     };
   }, [aiQuestion, imageViewer, isAiLoading]);
 
+  useEffect(() => {
+    if (!speechSupported) {
+      return undefined;
+    }
+
+    const synthesis = window.speechSynthesis;
+
+    function syncVoices() {
+      setAvailableVoices(sortSpeechVoices(synthesis.getVoices()));
+    }
+
+    syncVoices();
+    synthesis.addEventListener?.("voiceschanged", syncVoices);
+
+    return () => {
+      synthesis.removeEventListener?.("voiceschanged", syncVoices);
+    };
+  }, [speechSupported]);
+
+  useEffect(() => {
+    if (!availableVoices.length) {
+      return;
+    }
+
+    const preferredVoice = pickPreferredSpeechVoice(
+      availableVoices,
+      speechSettings.voiceURI,
+    );
+
+    if (!preferredVoice || preferredVoice.voiceURI === speechSettings.voiceURI) {
+      return;
+    }
+
+    setSpeechSettings((current) => ({
+      ...current,
+      voiceURI: preferredVoice.voiceURI,
+    }));
+  }, [availableVoices, speechSettings.voiceURI]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    try {
+      window.localStorage.setItem(
+        speechSettingsStorageKey,
+        JSON.stringify(speechSettings),
+      );
+    } catch {
+      // Ignore local persistence errors and keep the in-memory state.
+    }
+  }, [speechSettings]);
+
+  useEffect(() => {
+    return () => {
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
+
   function updateField(event) {
     const { name, value } = event.target;
     setFormState((current) => ({ ...current, [name]: value }));
@@ -1011,6 +1231,79 @@ export default function App() {
           : question,
       ),
     );
+  }
+
+  function updateSpeechSetting(key, value) {
+    setSpeechSettings((current) => ({
+      ...current,
+      [key]: value,
+    }));
+  }
+
+  function stopSpeech() {
+    if (!speechSupported) {
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    setActiveSpeechId("");
+  }
+
+  function startSpeech(targetId, text) {
+    if (!speechSupported || !text.trim()) {
+      return;
+    }
+
+    const synthesis = window.speechSynthesis;
+    const utterance = new window.SpeechSynthesisUtterance(text);
+    const selectedVoice = pickPreferredSpeechVoice(
+      availableVoices.length ? availableVoices : synthesis.getVoices(),
+      speechSettings.voiceURI,
+    );
+
+    utterance.lang = selectedVoice?.lang || "pl-PL";
+    utterance.rate = speechSettings.rate;
+
+    if (selectedVoice) {
+      utterance.voice = selectedVoice;
+    }
+
+    utterance.onend = () => {
+      setActiveSpeechId((current) => (current === targetId ? "" : current));
+    };
+    utterance.onerror = () => {
+      setActiveSpeechId((current) => (current === targetId ? "" : current));
+    };
+
+    synthesis.cancel();
+    setActiveSpeechId(targetId);
+    synthesis.speak(utterance);
+  }
+
+  function toggleQuestionSpeech(question) {
+    const targetId = `question:${question.id}`;
+
+    if (activeSpeechId === targetId) {
+      stopSpeech();
+      return;
+    }
+
+    startSpeech(targetId, buildQuestionSpeechText(question));
+  }
+
+  function toggleFlashcardSpeech(question) {
+    if (!question) {
+      return;
+    }
+
+    const targetId = `flashcard:${question.id}:${showAnswer ? "answer" : "question"}`;
+
+    if (activeSpeechId === targetId) {
+      stopSpeech();
+      return;
+    }
+
+    startSpeech(targetId, buildFlashcardSpeechText(question, showAnswer));
   }
 
   function openAiModal(question) {
@@ -1197,6 +1490,52 @@ export default function App() {
                 </button>
               ))}
             </div>
+
+            {speechSupported && (
+              <div className="speech-tools">
+                <p className="side-panel__label">Lektor</p>
+
+                <div className="speech-tools__controls">
+                  <label className="speech-field">
+                    <span>Glos</span>
+                    <select
+                      value={speechSettings.voiceURI}
+                      disabled={!availableVoices.length}
+                      onChange={(event) =>
+                        updateSpeechSetting("voiceURI", event.target.value)
+                      }
+                    >
+                      {availableVoices.length ? (
+                        availableVoices.map((voice) => (
+                          <option key={voice.voiceURI} value={voice.voiceURI}>
+                            {voice.name} ({voice.lang})
+                          </option>
+                        ))
+                      ) : (
+                        <option value="">Ladowanie glosow...</option>
+                      )}
+                    </select>
+                  </label>
+
+                  <label className="speech-field speech-field--range">
+                    <span>Tempo: {speechSettings.rate.toFixed(2)}x</span>
+                    <input
+                      type="range"
+                      min="0.75"
+                      max="1.2"
+                      step="0.05"
+                      value={speechSettings.rate}
+                      onChange={(event) =>
+                        updateSpeechSetting(
+                          "rate",
+                          Number(event.target.value),
+                        )
+                      }
+                    />
+                  </label>
+                </div>
+              </div>
+            )}
           </section>
         )}
 
@@ -1209,10 +1548,13 @@ export default function App() {
                     key={question.id}
                     question={question}
                     isExpanded={expandedQuestions.has(question.id)}
+                    isSpeaking={activeSpeechId === `question:${question.id}`}
                     onAskAi={openAiModal}
                     onOpenImageViewer={openImageViewer}
+                    onToggleRead={toggleQuestionSpeech}
                     onToggle={toggleQuestion}
                     onToggleFlag={toggleQuestionFlag}
+                    speechSupported={speechSupported}
                   />
                 ))
               ) : (
@@ -1316,6 +1658,18 @@ export default function App() {
                 <div className="flashcard-controls">
                   <button type="button" onClick={showPreviousFlashcard}>
                     Poprzednia
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => toggleFlashcardSpeech(flashcard)}
+                    disabled={!speechSupported}
+                  >
+                    {speechSupported
+                      ? activeSpeechId ===
+                        `flashcard:${flashcard.id}:${showAnswer ? "answer" : "question"}`
+                        ? "Zatrzymaj"
+                        : "Czytaj"
+                      : "Czytanie niedostepne"}
                   </button>
                   <button
                     type="button"
