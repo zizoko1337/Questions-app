@@ -1,0 +1,114 @@
+[
+  {
+    "id": "event-loop-browser",
+    "name": "Jak działa event loop w przeglądarce?",
+    "description": "## Co powiedzieć na rozmowie\n\nEvent loop koordynuje call stack, kolejki zadań i renderowanie.\n\n- Najpierw cały kod synchroniczny\n- Potem opróżnia microtask queue (Promise, queueMicrotask)\n- Potem macrotaski (setTimeout, events, I/O)\n\n```js\nconsole.log('A');\nsetTimeout(() => console.log('B'), 0);\nPromise.resolve().then(() => console.log('C'));\nconsole.log('D');\n```\nKolejność: `A D C B`",
+    "categories": ["javascript"],
+    "images": [],
+    "links": []
+  },
+  {
+    "id": "execution-context-call-stack",
+    "name": "Czym jest execution context i call stack w JavaScript?",
+    "description": "## Co powiedzieć na rozmowie\n\n**Execution context** – zestaw informacji potrzebnych silnikowi do wykonania kodu (scope, this, zmienne, miejsce powrotu).\n\n**Call stack** – stos ramek execution context. Każde wywołanie funkcji dokłada nową ramkę. Gdy funkcja kończy – ramka jest zdejmowana.",
+    "categories": ["javascript"],
+    "images": [],
+    "links": []
+  },
+  {
+    "id": "closures",
+    "name": "Czym są closures w JavaScript?",
+    "description": "## Co powiedzieć na rozmowie\n\nClosure to funkcja, która pamięta lexical scope, w którym została utworzona – nawet po zakończeniu funkcji zewnętrznej.\n\nDzięki temu można tworzyć prywatne zmienne, liczniki, debounce, factory functions itp.",
+    "categories": ["javascript"],
+    "images": [],
+    "links": []
+  },
+  {
+    "id": "this-keyword",
+    "name": "Jak działa this w JavaScript?",
+    "description": "## Co powiedzieć na rozmowie\n\nWartość `this` zależy od sposobu wywołania funkcji:\n- `obj.method()` → `this` = `obj`\n- zwykłe wywołanie → `window` / `undefined` (strict)\n- `new` → nowy obiekt\n- Arrow function → dziedziczy `this` z otoczenia\n- `call/apply/bind` → jawne ustawienie",
+    "categories": ["javascript"],
+    "images": [],
+    "links": []
+  },
+  {
+    "id": "var-let-const-hoisting",
+    "name": "Różnica między var, let, const + hoisting",
+    "description": "## Co powiedzieć na rozmowie\n\n- `var` – funkcyjny scope, hoisting (wartość `undefined`)\n- `let` / `const` – blokowy scope + Temporal Dead Zone\n- `const` nie pozwala na reasignację referencji\n\nHoisting wynika z tworzenia execution context.",
+    "categories": ["javascript"],
+    "images": [],
+    "links": []
+  },
+  {
+    "id": "prototype-chain",
+    "name": "Czym jest prototype chain?",
+    "description": "## Co powiedzieć na rozmowie\n\nJavaScript dziedziczy przez prototypy. Gdy nie ma właściwości na obiekcie – silnik szuka wyżej w łańcuchu `__proto__` aż do `null`.\n\n`class` to tylko cukier składniowy na prototypach.",
+    "categories": ["javascript"],
+    "images": [],
+    "links": []
+  },
+  {
+    "id": "promise-basics",
+    "name": "Czym jest Promise w JavaScript?",
+    "description": "## Co powiedzieć na rozmowie\n\nPromise reprezentuje przyszły wynik operacji asynchronicznej. Ma 3 stany: pending → fulfilled / rejected.\n\nUżywamy `.then/.catch` lub `async/await`. Często pytane: `Promise.all`, `Promise.allSettled`, `Promise.race`.",
+    "categories": ["javascript"],
+    "images": [],
+    "links": []
+  },
+  {
+    "id": "async-await",
+    "name": "Jak działają async i await?",
+    "description": "## Co powiedzieć na rozmowie\n\n`async` funkcja zawsze zwraca Promise. `await` wstrzymuje wykonanie tej funkcji (nie blokuje wątku) do rozstrzygnięcia Promise.\n\nBłędy łapiemy przez `try/catch`. Pod spodem to nadal Promise’y.",
+    "categories": ["javascript"],
+    "images": [],
+    "links": []
+  },
+  {
+    "id": "scope-lexical-scope",
+    "name": "Czym jest scope i lexical scope?",
+    "description": "## Co powiedzieć na rozmowie\n\nScope określa widoczność zmiennych. JavaScript używa lexical scope – funkcja zapamiętuje zakres, w którym została zdefiniowana.\n\n`var` = funkcyjny, `let/const` = blokowy. Lexical scope jest podstawą closures.",
+    "categories": ["javascript"],
+    "images": [],
+    "links": []
+  },
+  {
+    "id": "call-apply-bind",
+    "name": "Czym różnią się call, apply i bind?",
+    "description": "## Co powiedzieć na rozmowie\n\n- `call(thisArg, arg1, arg2, ...)` – wywołuje od razu\n- `apply(thisArg, [args])` – wywołuje od razu, argumenty jako tablica\n- `bind(thisArg)` – zwraca nową funkcję z przypiętym `this` (nie wywołuje)",
+    "categories": ["javascript"],
+    "images": [],
+    "links": []
+  },
+  {
+    "id": "event-delegation",
+    "name": "Czym jest event delegation?",
+    "description": "## Co powiedzieć na rozmowie\n\nEvent delegation to przypięcie jednego event listenera na element rodzica zamiast na wiele dzieci. Dzięki bubblingowi zdarzeń możemy obsłużyć kliknięcia na dynamicznie dodawanych elementach.\n\nZalety: mniej listenerów, lepsza wydajność, działa na nowych elementach.",
+    "categories": ["javascript"],
+    "images": [],
+    "links": []
+  },
+  {
+    "id": "rendering-browser",
+    "name": "Jak działa renderowanie w przeglądarce? (Reflow, Repaint)",
+    "description": "## Co powiedzieć na rozmowie\n\nPrzeglądarka wykonuje: JavaScript → Style → Layout (Reflow) → Paint → Composite.\n\nReflow (Layout) – bardzo kosztowny (zmiana rozmiaru/pozycji).\nRepaint – zmiana koloru/tła bez zmiany układu.\nUnikamy layout thrashing (czytanie i pisanie layoutu w pętli).",
+    "categories": ["javascript"],
+    "images": [],
+    "links": []
+  },
+  {
+    "id": "debounce-throttle",
+    "name": "Debounce vs Throttle",
+    "description": "## Co powiedzieć na rozmowie\n\n- **Debounce** – wywołuje funkcję dopiero po X ms od ostatniego wywołania (np. wyszukiwanie na żywo)\n- **Throttle** – wywołuje funkcję maksymalnie co X ms (np. scroll, resize, game loop)\n\nOba zapobiegają nadmiernemu wykonywaniu funkcji.",
+    "categories": ["javascript"],
+    "images": [],
+    "links": []
+  },
+  {
+    "id": "es-modules",
+    "name": "ES Modules vs CommonJS",
+    "description": "## Co powiedzieć na rozmowie\n\n- **ES Modules** (`import/export`) – statyczne, hoisting, działają w przeglądarce natywnie\n- **CommonJS** (`require/module.exports`) – dynamiczne, używane w Node.js\n\nESM pozwala na tree-shaking i lepszą optymalizację bundlera.",
+    "categories": ["javascript"],
+    "images": [],
+    "links": []
+  }
+]

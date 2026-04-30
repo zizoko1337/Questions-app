@@ -1,4 +1,4 @@
-[
+﻿[
   {
     "id": "event-loop-browser",
     "name": "Jak dziala event loop w przegladarce?",
@@ -28,7 +28,7 @@
   {
     "id": "execution-context-call-stack",
     "name": "Czym jest execution context i call stack w JavaScript?",
-    "description": "Execution context to zestaw informacji, ktorych silnik potrzebuje, zeby wykonac aktualny kod. Gdy wywolujesz funkcje, dostaje ona wlasny context i trafia na call stack, a po zakonczeniu spada ze stosu.\n\n### Najwazniejsze punkty\n- kod startuje od global execution context\n- kazde wywolanie funkcji doklada nowa ramke na stos\n- zbyt gleboka rekurencja albo lancuch wywolan konczy sie `stack overflow`\n\n### Na rozmowie\nPowiedz, ze call stack wyjasnia kolejnosc wywolan funkcji i jest baza do zrozumienia event loop.",
+    "description": "Execution context to zestaw informacji, ktorych silnik potrzebuje, zeby wykonac aktualny kod. Call stack to stos ramek execution context: pokazuje, ktora funkcja wykonuje sie aktualnie i do ktorej silnik ma wrocic po zakonczeniu obecnej.\n\n### Najwazniejsze punkty\n- kod startuje od global execution context\n- kazde wywolanie funkcji doklada nowa ramke na stos\n- zbyt gleboka rekurencja albo lancuch wywolan konczy sie `stack overflow`\n\n### Na rozmowie\nPowiedz, ze call stack to stos ramek execution context, ktory trzyma kolejnosc wywolan i porzadek powrotu po zakonczeniu funkcji.",
     "categories": ["javascript"],
     "images": [
       {

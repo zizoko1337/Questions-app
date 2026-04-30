@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import seedQuestions from "./data/questions.json";
+import seedMustKnowQuestions from "./data/mustKnowQuestions.json";
 
 const geminiApiKey = import.meta.env.VITE_GEMINI_API_KEY;
 const questionFlagsStorageKey = "questions-app-question-flags";
@@ -19,6 +20,7 @@ const allowedCategories = [
 
 const views = [
   { id: "list", label: "Lista pytan" },
+  { id: "must-know", label: "Must know" },
   { id: "flashcards", label: "Fiszki" },
   { id: "prompts", label: "Prompty AI" },
   { id: "add", label: "Dodaj pytanie" },
@@ -82,7 +84,8 @@ function buildQuestionScopedPromptEntry({
   questions,
 }) {
   const scope = questions.map(
-    (question) => `${question.name} [${question.categories.join(", ")}]`,
+    (question) =>
+      `${polishifyPlainText(question.name)} [${question.categories.join(", ")}]`,
   );
 
   if (!scope.length) {
@@ -347,10 +350,10 @@ function loadStoredSpeechSettings() {
   }
 }
 
-function loadInitialQuestions() {
+function loadQuestionBank(seedBank) {
   const storedFlags = loadStoredQuestionFlags();
 
-  return seedQuestions.map((question) => {
+  return seedBank.map((question) => {
     const normalizedQuestion = normalizeQuestion(question);
     const storedQuestionFlags = storedFlags[normalizedQuestion.id];
 
@@ -365,6 +368,76 @@ function loadInitialQuestions() {
       isLearned: Boolean(storedQuestionFlags.isLearned),
     };
   });
+}
+
+function loadInitialQuestions() {
+  return loadQuestionBank(seedQuestions);
+}
+
+function loadInitialMustKnowQuestions() {
+  return loadQuestionBank(seedMustKnowQuestions);
+}
+
+function getQuestionsPromptPayload(questions) {
+  return questions.map((question) => ({
+    id: question.id,
+    name: polishifyPlainText(question.name),
+    description: polishifyMarkdown(question.description),
+    categories: question.categories,
+    images: question.images.map((image) => ({
+      src: image.src,
+      alt: polishifyPlainText(image.alt),
+    })),
+    links: question.links.map((link) => ({
+      label: polishifyPlainText(link.label),
+      href: link.href,
+    })),
+  }));
+}
+
+function buildMustKnowPromptEntry(questions) {
+  const scope = questions.map((question) => polishifyPlainText(question.name));
+  const questionsJson = JSON.stringify(getQuestionsPromptPayload(questions), null, 2);
+  const prompt = [
+    "Chce przeprowadzic z Toba techniczna rozmowe cwiczeniowa z listy must know z frontendu.",
+    "",
+    "Twoja rola:",
+    "- jestes trenerem technicznym pomagajacym mi utrwalac wiedze",
+    "- pytasz tylko na podstawie zagadnien z ponizszego JSON-a",
+    "- Twoim celem jest sprawdzanie, poprawianie i utrwalanie mojej wiedzy",
+    "- rozmawiasz po polsku",
+    "",
+    "Zasady rozmowy:",
+    "- zadaj jedno pytanie na raz",
+    "- bazuj na tresci opisow, a nie tylko na samych tytulach",
+    "- po kazdej mojej odpowiedzi:",
+    "  1. krotko wskaz, co bylo trafne",
+    "  2. dopowiedz, czego zabraklo albo co bylo nieprecyzyjne",
+    "  3. podaj lepsza, zwiezla odpowiedz do zapamietania",
+    "- jesli warto, dopytaj glebiej lub porownaj dwa podobne tematy",
+    "- po kazdych 5 pytaniach zrob krotkie podsumowanie brakow i tematow do powtorki",
+    "",
+    "Pelny material zrodlowy w JSON:",
+    questionsJson,
+    "",
+    "Zacznij od pierwszego pytania.",
+  ].join("\n");
+
+  return {
+    id: "must-know-json",
+    label: "Must know JSON",
+    description:
+      "Prompt do przepytywania z listy must know. Kopiuje caly JSON tej sekcji, wiec agent dostaje pelny kontekst opisow.",
+    scope,
+    prompt,
+    isAvailable: Boolean(questions.length),
+  };
+}
+
+function getUniqueQuestions(questions) {
+  return Array.from(
+    new Map(questions.map((question) => [question.id, question])).values(),
+  );
 }
 
 function buildQuestionObject(formState) {
@@ -479,9 +552,224 @@ function MarkdownBlock({ content }) {
   );
 }
 
+const polishExactMap = new Map([
+  ["alt", "alt"],
+  ["blad", "błąd"],
+  ["bledow", "błędów"],
+  ["bledy", "błędy"],
+  ["bledu", "błędu"],
+  ["calego", "całego"],
+  ["czesc", "część"],
+  ["czesto", "często"],
+  ["dzieki", "dzięki"],
+  ["glowna", "główna"],
+  ["glownie", "głównie"],
+  ["glowny", "główny"],
+  ["jesli", "jeśli"],
+  ["juz", "już"],
+  ["krotkie", "krótkie"],
+  ["krotki", "krótki"],
+  ["kolejnosc", "kolejność"],
+  ["koordynacje", "koordynację"],
+  ["laduja", "ładują"],
+  ["miedzy", "między"],
+  ["moga", "mogą"],
+  ["moge", "mogę"],
+  ["mogl", "mógł"],
+  ["mozliwosc", "możliwość"],
+  ["mozliwosci", "możliwości"],
+  ["mozna", "można"],
+  ["moze", "może"],
+  ["mozesz", "możesz"],
+  ["najczesciej", "najczęściej"],
+  ["najwazniejsze", "najważniejsze"],
+  ["najwazniejszy", "najważniejszy"],
+  ["niezaleznie", "niezależnie"],
+  ["niz", "niż"],
+  ["obsluga", "obsługa"],
+  ["odswiezanie", "odświeżanie"],
+  ["ogolne", "ogólne"],
+  ["ograniczen", "ograniczeń"],
+  ["pamiec", "pamięć"],
+  ["pamietac", "pamiętać"],
+  ["pelnego", "pełnego"],
+  ["pobrac", "pobrać"],
+  ["poczatkowo", "początkowo"],
+  ["podglad", "podgląd"],
+  ["powiazane", "powiązane"],
+  ["powiedziec", "powiedzieć"],
+  ["prawidlowa", "prawidłowa"],
+  ["przyklad", "przykład"],
+  ["przyklady", "przykłady"],
+  ["roznia", "różnią"],
+  ["roznice", "różnice"],
+  ["roznic", "różnic"],
+  ["rownolegle", "równolegle"],
+  ["sciezki", "ścieżki"],
+  ["sie", "się"],
+  ["skad", "skąd"],
+  ["sluzy", "służy"],
+  ["spojnosc", "spójność"],
+  ["sprobuj", "spróbuj"],
+  ["srodowisku", "środowisku"],
+  ["srodowisko", "środowisko"],
+  ["szybkosc", "szybkość"],
+  ["takze", "także"],
+  ["trudnosc", "trudność"],
+  ["udalo", "udało"],
+  ["uklad", "układ"],
+  ["umozliwia", "umożliwia"],
+  ["usunac", "usunąć"],
+  ["uzycia", "użycia"],
+  ["uzytecznosci", "użyteczności"],
+  ["uzytkownika", "użytkownika"],
+  ["uzytkownikowi", "użytkownikowi"],
+  ["wazne", "ważne"],
+  ["wartosc", "wartość"],
+  ["wartosci", "wartości"],
+  ["wewnatrz", "wewnątrz"],
+  ["widocznosc", "widoczność"],
+  ["wiecej", "więcej"],
+  ["wlasciwie", "właściwie"],
+  ["wtedy", "wtedy"],
+  ["wyjasnia", "wyjaśnia"],
+  ["wyjasnienie", "wyjaśnienie"],
+  ["wzgledem", "względem"],
+  ["zadan", "zadań"],
+  ["zaleznosci", "zależności"],
+  ["zalezy", "zależy"],
+  ["zaznaczyc", "zaznaczyć"],
+  ["zdjecia", "zdjęcia"],
+  ["zdjecie", "zdjęcie"],
+  ["zeby", "żeby"],
+  ["zlozyc", "złożyć"],
+  ["zmienic", "zmienić"],
+  ["zrodla", "źródła"],
+  ["zwiazane", "związane"],
+]);
+
+const polishStemReplacements = [
+  ["bezpieczenstw", "bezpieczeństw"],
+  ["czest", "częst"],
+  ["dostep", "dostęp"],
+  ["glebok", "głębok"],
+  ["glown", "główn"],
+  ["lancuch", "łańcuch"],
+  ["ladow", "ładow"],
+  ["najwaz", "najważ"],
+  ["najczesc", "najczęśc"],
+  ["odrozn", "odróżn"],
+  ["odslon", "odsłoń"],
+  ["obslug", "obsług"],
+  ["peln", "pełn"],
+  ["poczat", "począt"],
+  ["pogl", "pogl"],
+  ["polacz", "połącz"],
+  ["przegladar", "przeglądar"],
+  ["przelad", "przeład"],
+  ["przelacz", "przełącz"],
+  ["przejsc", "przejść"],
+  ["rozn", "różn"],
+  ["szczegol", "szczegół"],
+  ["srodow", "środow"],
+  ["uzyt", "użyt"],
+  ["uzyw", "używ"],
+  ["wazn", "ważn"],
+  ["wewnetrz", "wewnątrz"],
+  ["wieksz", "większ"],
+  ["wlasc", "właśc"],
+  ["wlasn", "własn"],
+  ["wplyw", "wpływ"],
+  ["wywol", "wywoł"],
+  ["zakoncz", "zakończ"],
+  ["zdjec", "zdjęc"],
+  ["zwieks", "zwięks"],
+];
+
+function preserveTokenCase(original, replacement) {
+  if (original.toUpperCase() === original) {
+    return replacement.toUpperCase();
+  }
+
+  if (
+    original.charAt(0).toUpperCase() === original.charAt(0) &&
+    original.slice(1).toLowerCase() === original.slice(1)
+  ) {
+    return replacement.charAt(0).toUpperCase() + replacement.slice(1);
+  }
+
+  return replacement;
+}
+
+function polishifyToken(token) {
+  const lowerToken = token.toLowerCase();
+
+  if (polishExactMap.has(lowerToken)) {
+    return preserveTokenCase(token, polishExactMap.get(lowerToken));
+  }
+
+  for (const [pattern, replacement] of polishStemReplacements) {
+    if (lowerToken.includes(pattern)) {
+      return preserveTokenCase(token, lowerToken.replace(pattern, replacement));
+    }
+  }
+
+  return token;
+}
+
+function polishifyPlainText(text) {
+  if (!text) {
+    return "";
+  }
+
+  return text
+    .replace(/\b([A-Za-z]+)\b/g, (match) => polishifyToken(match))
+    .replace(/\bto znaczy, ze\b/gi, "to znaczy, że")
+    .replace(/\bto oznacza, ze\b/gi, "to oznacza, że")
+    .replace(/\bto sprawia, ze\b/gi, "to sprawia, że")
+    .replace(/\bdlatego, ze\b/gi, "dlatego, że")
+    .replace(/\bwynika z tego, ze\b/gi, "wynika z tego, że")
+    .replace(/\bsprawia ze\b/gi, "sprawia że")
+    .replace(/\bpowiedz, ze\b/gi, "powiedz, że")
+    .replace(/\bwarto dodac, ze\b/gi, "warto dodać, że")
+    .replace(/\bze zmiennych\b/gi, "ze zmiennych")
+    .replace(/\bze state\b/gi, "ze state")
+    .replace(/\bże stosu\b/gi, "ze stosu");
+}
+
+function polishifyMarkdown(markdown) {
+  if (!markdown) {
+    return "";
+  }
+
+  const preserved = [];
+  const preserve = (value, regex) =>
+    value.replace(regex, (match) => {
+      const placeholder = `@@${preserved.length}@@`;
+      preserved.push(match);
+      return placeholder;
+    });
+
+  let nextMarkdown = markdown;
+
+  nextMarkdown = preserve(nextMarkdown, /```[\s\S]*?```/g);
+  nextMarkdown = preserve(nextMarkdown, /`[^`\n]+`/g);
+  nextMarkdown = preserve(nextMarkdown, /https?:\/\/[^\s)]+/g);
+  nextMarkdown = polishifyPlainText(nextMarkdown);
+
+  return nextMarkdown.replace(/@@(\d+)@@/g, (_, index) => preserved[Number(index)]);
+}
+
+function normalizeSearchText(value) {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
 function markdownToSpeechText(markdown) {
-  return markdown
-    .replace(/```[\s\S]*?```/g, "\nPrzyklad kodu.\n")
+  return polishifyMarkdown(markdown)
+    .replace(/```[\s\S]*?```/g, "\nPrzykład kodu.\n")
     .replace(/`([^`]+)`/g, "$1")
     .replace(/!\[([^\]]*)\]\([^)]+\)/g, "$1")
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$1")
@@ -495,7 +783,7 @@ function markdownToSpeechText(markdown) {
 }
 
 function buildQuestionSpeechText(question) {
-  const parts = [question.name];
+  const parts = [polishifyPlainText(question.name)];
 
   if (question.categories.length) {
     parts.push(`Kategorie: ${question.categories.join(", ")}.`);
@@ -509,7 +797,7 @@ function buildQuestionSpeechText(question) {
 
   if (question.images.length) {
     parts.push(
-      `Obrazy: ${question.images.map((image) => image.alt).join(". ")}.`,
+      `Obrazy: ${question.images.map((image) => polishifyPlainText(image.alt)).join(". ")}.`,
     );
   }
 
@@ -519,11 +807,11 @@ function buildQuestionSpeechText(question) {
 function buildFlashcardSpeechText(question, showAnswer) {
   if (!showAnswer) {
     return [
-      question.name,
+      polishifyPlainText(question.name),
       question.categories.length
         ? `Kategorie: ${question.categories.join(", ")}.`
         : "",
-      "Sprobuj odpowiedziec samodzielnie, a potem odslon tyl fiszki.",
+      "Spróbuj odpowiedzieć samodzielnie, a potem odsłoń tył fiszki.",
     ]
       .filter(Boolean)
       .join(" ");
@@ -552,24 +840,28 @@ function QuestionResources({ images, links, onOpenImageViewer }) {
         <section className="resource-section">
           <p className="side-panel__label">Obrazy</p>
           <div className="image-grid">
-            {images.map((image, index) => (
-              <figure key={image.src} className="image-card">
-                <button
-                  type="button"
-                  className="image-card__button"
-                  onClick={() => onOpenImageViewer(index)}
-                  aria-label={`Otworz obraz: ${image.alt}`}
-                >
-                  <img
-                    src={image.src}
-                    alt={image.alt}
-                    loading="lazy"
-                    decoding="async"
-                  />
-                </button>
-                <figcaption>{image.alt}</figcaption>
-              </figure>
-            ))}
+            {images.map((image, index) => {
+              const imageAlt = polishifyPlainText(image.alt);
+
+              return (
+                <figure key={image.src} className="image-card">
+                  <button
+                    type="button"
+                    className="image-card__button"
+                    onClick={() => onOpenImageViewer(index)}
+                    aria-label={`Otwórz obraz: ${imageAlt}`}
+                  >
+                    <img
+                      src={image.src}
+                      alt={imageAlt}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </button>
+                  <figcaption>{imageAlt}</figcaption>
+                </figure>
+              );
+            })}
           </div>
         </section>
       )}
@@ -581,7 +873,7 @@ function QuestionResources({ images, links, onOpenImageViewer }) {
             {links.map((link) => (
               <li key={`${link.label}-${link.href}`}>
                 <a href={link.href} target="_blank" rel="noreferrer noopener">
-                  {link.label}
+                  {polishifyPlainText(link.label)}
                 </a>
               </li>
             ))}
@@ -593,6 +885,8 @@ function QuestionResources({ images, links, onOpenImageViewer }) {
 }
 
 function ImageViewer({ image, index, total, onClose, onNext, onPrevious }) {
+  const imageAlt = polishifyPlainText(image.alt);
+
   return (
     <div
       className="modal-backdrop modal-backdrop--viewer"
@@ -637,8 +931,8 @@ function ImageViewer({ image, index, total, onClose, onNext, onPrevious }) {
           )}
 
           <figure className="image-viewer__figure">
-            <img src={image.src} alt={image.alt} />
-            <figcaption>{image.alt}</figcaption>
+            <img src={image.src} alt={imageAlt} />
+            <figcaption>{imageAlt}</figcaption>
           </figure>
 
           {total > 1 && (
@@ -776,6 +1070,9 @@ function QuestionCard({
   onToggleFlag,
   speechSupported,
 }) {
+  const questionName = polishifyPlainText(question.name);
+  const questionDescription = polishifyMarkdown(question.description);
+
   return (
     <article
       className={`question-card status-surface ${isExpanded ? "is-expanded" : ""}`}
@@ -784,7 +1081,7 @@ function QuestionCard({
       <div className="question-card__summary">
         <div className="question-card__header">
           <p className="question-card__eyebrow">Pytanie</p>
-          <h3>{question.name}</h3>
+          <h3>{questionName}</h3>
 
           <div className="tag-row tag-row--compact">
             {question.categories.map((category) => (
@@ -838,7 +1135,7 @@ function QuestionCard({
       {isExpanded && (
         <div id={`question-details-${question.id}`} className="question-card__body">
           <div className="markdown-body">
-            <MarkdownBlock content={question.description} />
+            <MarkdownBlock content={questionDescription} />
           </div>
 
           <QuestionResources
@@ -861,8 +1158,12 @@ export default function App() {
     "SpeechSynthesisUtterance" in window;
   const [activeView, setActiveView] = useState("list");
   const [questions, setQuestions] = useState(loadInitialQuestions);
+  const [mustKnowQuestions, setMustKnowQuestions] = useState(
+    loadInitialMustKnowQuestions,
+  );
   const [selectedCategory, setSelectedCategory] = useState("Wszystkie");
   const [search, setSearch] = useState("");
+  const [flashcardSource, setFlashcardSource] = useState("questions");
   const [flashcardIndex, setFlashcardIndex] = useState(0);
   const [flashcardFilters, setFlashcardFilters] = useState({
     importantOnly: false,
@@ -887,50 +1188,63 @@ export default function App() {
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [imageViewer, setImageViewer] = useState(null);
   const [activeSpeechId, setActiveSpeechId] = useState("");
-
+  const promptQuestions = getUniqueQuestions([...mustKnowQuestions, ...questions]);
+  const activeQuestionBank =
+    activeView === "must-know"
+      ? mustKnowQuestions
+      : activeView === "flashcards" && flashcardSource === "must-know"
+        ? mustKnowQuestions
+        : questions;
   const allCategories = [
     "Wszystkie",
     ...Array.from(
-      new Set(questions.flatMap((question) => question.categories)),
+      new Set(activeQuestionBank.flatMap((question) => question.categories)),
     ).sort((left, right) => left.localeCompare(right)),
   ];
+  const normalizedSearch = normalizeSearchText(search.trim());
+  const filterQuestionBank = (questionBank) =>
+    questionBank.filter((question) => {
+      const matchesCategory =
+        selectedCategory === "Wszystkie" ||
+        question.categories.includes(selectedCategory);
+      const haystack = [
+        question.name,
+        question.description,
+        question.categories.join(" "),
+        question.links.map((link) => `${link.label} ${link.href}`).join(" "),
+      ]
+        .join(" ");
+      const matchesSearch =
+        !normalizedSearch ||
+        normalizeSearchText(haystack).includes(normalizedSearch);
 
-  const filteredQuestions = questions.filter((question) => {
-    const matchesCategory =
-      selectedCategory === "Wszystkie" ||
-      question.categories.includes(selectedCategory);
-    const haystack = [
-      question.name,
-      question.description,
-      question.categories.join(" "),
-      question.links.map((link) => `${link.label} ${link.href}`).join(" "),
-    ]
-      .join(" ")
-      .toLowerCase();
-    const matchesSearch = haystack.includes(search.toLowerCase().trim());
-
-    return matchesCategory && matchesSearch;
-  });
+      return matchesCategory && matchesSearch;
+    });
+  const filteredQuestions = filterQuestionBank(questions);
+  const filteredMustKnowQuestions = filterQuestionBank(mustKnowQuestions);
+  const flashcardBaseQuestions =
+    flashcardSource === "must-know" ? filteredMustKnowQuestions : filteredQuestions;
 
   const promptEntries = [
+    buildMustKnowPromptEntry(mustKnowQuestions),
     buildQuestionScopedPromptEntry({
       id: "important",
       label: "Wazne",
       emptyLabel: "wazne",
       areaName: "pytan oznaczonych jako wazne w mojej aplikacji",
-      questions: questions.filter((question) => question.isImportant),
+      questions: promptQuestions.filter((question) => question.isImportant),
     }),
     buildQuestionScopedPromptEntry({
       id: "hard",
       label: "Trudne",
       emptyLabel: "trudne",
       areaName: "pytan oznaczonych jako trudne w mojej aplikacji",
-      questions: questions.filter((question) => question.isHard),
+      questions: promptQuestions.filter((question) => question.isHard),
     }),
     ...staticAiCoachPrompts,
   ];
 
-  const flashcardQuestions = filteredQuestions.filter((question) => {
+  const flashcardQuestions = flashcardBaseQuestions.filter((question) => {
     if (flashcardFilters.importantOnly && !question.isImportant) {
       return false;
     }
@@ -947,6 +1261,8 @@ export default function App() {
   });
 
   const flashcard = flashcardQuestions[flashcardIndex] ?? null;
+  const flashcardSourceLabel =
+    flashcardSource === "must-know" ? "Must know" : "Reszta pytan";
   const previewObject = withUniqueId(buildQuestionObject(formState), questions);
   const previewJson = JSON.stringify(previewObject, null, 2);
   const canSubmit =
@@ -970,14 +1286,27 @@ export default function App() {
     flashcardFilters.importantOnly,
     flashcardFilters.hardOnly,
     flashcardFilters.skipLearned,
+    flashcardSource,
   ]);
+
+  useEffect(() => {
+    if (
+      selectedCategory !== "Wszystkie" &&
+      !allCategories.includes(selectedCategory)
+    ) {
+      setSelectedCategory("Wszystkie");
+    }
+  }, [allCategories, selectedCategory]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
       return;
     }
 
-    const flagsByQuestionId = questions.reduce((accumulator, question) => {
+    const flagsByQuestionId = getUniqueQuestions([
+      ...questions,
+      ...mustKnowQuestions,
+    ]).reduce((accumulator, question) => {
       if (question.isImportant || question.isHard || question.isLearned) {
         accumulator[question.id] = {
           isImportant: question.isImportant,
@@ -997,7 +1326,7 @@ export default function App() {
     } catch {
       // Ignore local persistence errors and keep the in-memory state.
     }
-  }, [questions]);
+  }, [mustKnowQuestions, questions]);
 
   useEffect(() => {
     if (!aiQuestion && !imageViewer) {
@@ -1209,6 +1538,11 @@ export default function App() {
     setFlashcardIndex(0);
   }
 
+  function changeFlashcardSource(nextSource) {
+    setFlashcardSource(nextSource);
+    setFlashcardIndex(0);
+  }
+
   function toggleQuestion(questionId) {
     setExpandedQuestions((current) => {
       const next = new Set(current);
@@ -1225,6 +1559,13 @@ export default function App() {
 
   function toggleQuestionFlag(questionId, flagKey) {
     setQuestions((current) =>
+      current.map((question) =>
+        question.id === questionId
+          ? { ...question, [flagKey]: !question[flagKey] }
+          : question,
+      ),
+    );
+    setMustKnowQuestions((current) =>
       current.map((question) =>
         question.id === questionId
           ? { ...question, [flagKey]: !question[flagKey] }
@@ -1385,14 +1726,14 @@ export default function App() {
     setAiError("");
     setAiAnswer("");
 
-    const followUp = aiFollowUp.trim() || "Rozwin ten temat prostym jezykiem.";
+    const followUp = aiFollowUp.trim() || "Rozwiń ten temat prostym językiem.";
     const systemPrompt =
-      "Jestes mentorem frontendowym. Odpowiadasz po polsku prostym, konkretnym jezykiem. Najpierw wyjasnij intuicje, potem rozwin praktyke, pokaz typowe bledy rekrutacyjne i zakoncz 2-3 pytaniami sprawdzajacymi. Korzystaj tylko z kontekstu pytania i doprecyzowania uzytkownika.";
+      "Jesteś mentorem frontendowym. Odpowiadasz po polsku prostym, konkretnym językiem. Najpierw wyjaśnij intuicję, potem rozwiń praktykę, pokaż typowe błędy rekrutacyjne i zakończ 2-3 pytaniami sprawdzającymi. Korzystaj tylko z kontekstu pytania i doprecyzowania użytkownika.";
     const userPrompt = [
-      `Temat: ${aiQuestion.name}`,
+      `Temat: ${polishifyPlainText(aiQuestion.name)}`,
       `Kategorie: ${aiQuestion.categories.join(", ")}`,
-      `Material bazowy: ${aiQuestion.description}`,
-      `Doprecyzowanie uzytkownika: ${followUp}`,
+      `Materiał bazowy: ${polishifyMarkdown(aiQuestion.description)}`,
+      `Doprecyzowanie użytkownika: ${followUp}`,
     ].join("\n\n");
 
     try {
@@ -1447,9 +1788,8 @@ export default function App() {
 
       <div className="app-shell">
         <header className="topbar">
-          <div>
-            <p className="eyebrow">Frontend interview knowledge base</p>
-            <h1>Questions App</h1>
+          <div className="topbar__brand">
+            <h1>QA</h1>
           </div>
 
           <nav className="navbar" aria-label="Glowne sekcje">
@@ -1570,15 +1910,74 @@ export default function App() {
           </section>
         )}
 
+        {activeView === "must-know" && (
+          <section>
+            <article className="prompt-library__intro">
+              <p className="side-panel__label">Must know</p>
+              <h2>Najwazniejsze zagadnienia do opanowania</h2>
+              <p>
+                To jest osobna lista krytycznych tematow. Traktuj ja jako
+                skondensowany zestaw do szybkiej powtorki przed rozmowa.
+              </p>
+            </article>
+
+            <div className="question-list">
+              {filteredMustKnowQuestions.length ? (
+                filteredMustKnowQuestions.map((question) => (
+                  <QuestionCard
+                    key={`must-know-${question.id}`}
+                    question={question}
+                    isExpanded={expandedQuestions.has(question.id)}
+                    isSpeaking={activeSpeechId === `question:${question.id}`}
+                    onAskAi={openAiModal}
+                    onOpenImageViewer={openImageViewer}
+                    onToggleRead={toggleQuestionSpeech}
+                    onToggle={toggleQuestion}
+                    onToggleFlag={toggleQuestionFlag}
+                    speechSupported={speechSupported}
+                  />
+                ))
+              ) : (
+                <article className="empty-state">
+                  <h3>Brak wynikow</h3>
+                  <p>
+                    Zmien filtr kategorii albo fraze wyszukiwania. Ta zakladka
+                    pokazuje tylko liste `must know`.
+                  </p>
+                </article>
+              )}
+            </div>
+          </section>
+        )}
+
         {activeView === "flashcards" && (
           <section className="flashcards-layout">
             <div className="flashcard-meta">
               <p className="flashcard-meta__label">Tryb nauki</p>
               <h2>Fiszki z tych samych danych</h2>
               <p>
-                Przod karty to `name`, tyl to markdown z `description`. Jeden
-                obiekt danych obsluguje oba widoki.
+                Przod karty to `name`, tyl to markdown z `description`. Mozesz
+                przelaczac sie miedzy pula `must know` a reszta pytan.
               </p>
+              <div className="flashcard-meta__filters">
+                <p className="side-panel__label">Wybierz pule kart</p>
+                <div className="status-filter-group">
+                  <button
+                    type="button"
+                    className={`filter-pill ${flashcardSource === "questions" ? "is-active" : ""}`}
+                    onClick={() => changeFlashcardSource("questions")}
+                  >
+                    Reszta pytan
+                  </button>
+                  <button
+                    type="button"
+                    className={`filter-pill ${flashcardSource === "must-know" ? "is-active" : ""}`}
+                    onClick={() => changeFlashcardSource("must-know")}
+                  >
+                    Must know
+                  </button>
+                </div>
+              </div>
               <div className="flashcard-meta__actions">
                 <button
                   type="button"
@@ -1624,6 +2023,7 @@ export default function App() {
                   <p className="flashcard__counter">
                     {flashcardIndex + 1} / {flashcardQuestions.length}
                   </p>
+                  <p className="question-card__eyebrow">{flashcardSourceLabel}</p>
                   <div className="tag-row">
                     {flashcard.categories.map((category) => (
                       <span key={category} className="tag-pill">
@@ -1632,11 +2032,13 @@ export default function App() {
                     ))}
                   </div>
                   <QuestionStatusBadges question={flashcard} />
-                  <h3>{flashcard.name}</h3>
+                  <h3>{polishifyPlainText(flashcard.name)}</h3>
                   {showAnswer ? (
                     <>
                       <div className="markdown-body">
-                        <MarkdownBlock content={flashcard.description} />
+                        <MarkdownBlock
+                          content={polishifyMarkdown(flashcard.description)}
+                        />
                       </div>
 
                       <QuestionResources
@@ -1649,7 +2051,7 @@ export default function App() {
                     </>
                   ) : (
                     <p className="flashcard__hint">
-                      Sprobuj odpowiedziec samodzielnie, a potem odslon tyl
+                      Spróbuj odpowiedzieć samodzielnie, a potem odsłoń tył
                       fiszki.
                     </p>
                   )}
@@ -1687,9 +2089,9 @@ export default function App() {
               <article className="empty-state">
                 <h3>Nie ma kart do wyswietlenia</h3>
                 <p>
-                  Ten widok korzysta z aktualnych filtrow kategorii, wyszukiwania
-                  oraz znacznikow `Wazne`, `Trudne` i `Nauczone`. Rozszerz filtry
-                  albo oznacz wiecej pytan.
+                  Ten widok korzysta z wybranej puli, aktualnych filtrow
+                  kategorii, wyszukiwania oraz znacznikow `Wazne`, `Trudne` i
+                  `Nauczone`. Rozszerz filtry albo zmien pule kart.
                 </p>
               </article>
             )}
@@ -1705,8 +2107,8 @@ export default function App() {
                 Wklej prompt do ChatGPT, Gemini albo innego agenta i potraktuj
                 go jak rozmowe techniczna. Kazdy prompt pilnuje scope, wymaga
                 poprawiania odpowiedzi i ma utrwalac wiedze, a nie tylko podawac
-                definicje. Prompty `Wazne` i `Trudne` buduja sie automatycznie z
-                pytan oznaczonych w aplikacji.
+                definicje. Jest tu tez prompt `Must know JSON`, ktory kopiuje
+                pelny JSON tej listy, zeby agent dostal caly material bazowy.
               </p>
             </article>
 
@@ -1859,7 +2261,7 @@ export default function App() {
             <div className="ai-modal__header">
               <div>
                 <p className="side-panel__label">Dopytaj AI</p>
-                <h2 id="ai-modal-title">{aiQuestion.name}</h2>
+                <h2 id="ai-modal-title">{polishifyPlainText(aiQuestion.name)}</h2>
               </div>
 
               <button
@@ -1883,7 +2285,7 @@ export default function App() {
             <div className="ai-modal__context">
               <p className="side-panel__label">Baza pytania</p>
               <div className="markdown-body">
-                <MarkdownBlock content={aiQuestion.description} />
+                <MarkdownBlock content={polishifyMarkdown(aiQuestion.description)} />
               </div>
             </div>
 
