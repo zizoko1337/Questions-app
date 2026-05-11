@@ -18,15 +18,15 @@
   {
     "id": "closures",
     "name": "Czym są closures w JavaScript?",
-    "description": "## Co powiedzieć na rozmowie\n\nClosure to funkcja, która pamięta lexical scope, w którym została utworzona – nawet po zakończeniu funkcji zewnętrznej.\n\nDzięki temu można tworzyć prywatne zmienne, liczniki, debounce, factory functions itp.",
+    "description": "## Co powiedzieć na rozmowie\n\nClosure to funkcja, która pamięta lexical scope funkcji rodzica, w którym została utworzona – nawet po zakończeniu funkcji zewnętrznej/rodzica.\n\nDzięki temu można tworzyć prywatne zmienne, liczniki, debounce, factory functions itp.",
     "categories": ["javascript"],
     "images": [],
-    "links": []
+    "links": ["https://www.youtube.com/watch?v=FcrdHbrBVgA&list=LL&index=1"]
   },
   {
     "id": "this-keyword",
     "name": "Jak działa this w JavaScript?",
-    "description": "## Co powiedzieć na rozmowie\n\nWartość `this` zależy od sposobu wywołania funkcji:\n- `obj.method()` → `this` = `obj`\n- zwykłe wywołanie → `window` / `undefined` (strict)\n- `new` → nowy obiekt\n- Arrow function → dziedziczy `this` z otoczenia\n- `call/apply/bind` → jawne ustawienie",
+    "description": "## Co powiedzieć na rozmowie\n\nWartość `this` nie jest przypisana do funkcji na stałe, tylko zależy od sposobu jej wywołania. W metodzie zwykle wskazuje obiekt przed kropką, przy `new` nowo tworzony obiekt, a w arrow function jest dziedziczona z otoczenia. `call`, `apply` i `bind` pozwalają ustawić `this` jawnie.",
     "categories": ["javascript"],
     "images": [],
     "links": []
@@ -34,7 +34,7 @@
   {
     "id": "var-let-const-hoisting",
     "name": "Różnica między var, let, const + hoisting",
-    "description": "## Co powiedzieć na rozmowie\n\n- `var` – funkcyjny scope, hoisting (wartość `undefined`)\n- `let` / `const` – blokowy scope + Temporal Dead Zone\n- `const` nie pozwala na reasignację referencji\n\nHoisting wynika z tworzenia execution context.",
+    "description": "## Co powiedzieć na rozmowie\n\n- `var` – funkcyjny scope, hoisting (wartość `undefined`)\n- `let` / `const` – blokowy scope + Temporal Dead Zone\n- `const` nie pozwala na reasignację referencji\n\nHoisting przenosi deklaracje na początek zakresu, ale tylko `var` jest inicjalizowany. `let` i `const` są nieaktywne do momentu deklaracji.",
     "categories": ["javascript"],
     "images": [],
     "links": []
@@ -108,6 +108,46 @@
     "name": "ES Modules vs CommonJS",
     "description": "## Co powiedzieć na rozmowie\n\n- **ES Modules** (`import/export`) – statyczne, hoisting, działają w przeglądarce natywnie\n- **CommonJS** (`require/module.exports`) – dynamiczne, używane w Node.js\n\nESM pozwala na tree-shaking i lepszą optymalizację bundlera.",
     "categories": ["javascript"],
+    "images": [],
+    "links": []
+  },
+  {
+    "id": "position-static-relative-absolute",
+    "name": "Jaka jest różnica między static, relative i absolute?",
+    "description": "## Co powiedzieć na rozmowie\n\n`static` to domyślne pozycjonowanie i zwykle ignoruje `top`, `left`, `right`, `bottom`. `relative` przesuwa element względem jego normalnego miejsca, ale nadal zostawia go w normalnym układzie strony. `absolute` wyjmuje element z normalnego flow i pozycjonuje go względem najbliższego przodka, który nie ma `position: static`.",
+    "categories": ["css"],
+    "images": [],
+    "links": []
+  },
+  {
+    "id": "gap-vs-margin",
+    "name": "Jaka jest różnica między gap i margin?",
+    "description": "## Co powiedzieć na rozmowie\n\n`gap` ustawia odstępy między elementami wewnątrz kontenera `flex` albo `grid`. `margin` to zewnętrzny odstęp konkretnego elementu od innych elementów lub krawędzi. Najprościej: `gap` kontroluje przestrzeń z poziomu rodzica, a `margin` z poziomu dziecka.",
+    "categories": ["css"],
+    "images": [],
+    "links": []
+  },
+  {
+    "id": "flexbox-basics",
+    "name": "Jak najprościej rozumieć Flexbox?",
+    "description": "## Co powiedzieć na rozmowie\n\nFlexbox służy głównie do układania elementów w jednym wymiarze: w rzędzie albo w kolumnie. Rodzic steruje rozmieszczeniem dzieci, ich wyrównaniem i odstępami. To najlepszy wybór, gdy chcesz wygodnie ustawiać elementy w jednej osi.",
+    "categories": ["css"],
+    "images": [],
+    "links": []
+  },
+  {
+    "id": "grid-basics",
+    "name": "Jak najprościej rozumieć CSS Grid?",
+    "description": "## Co powiedzieć na rozmowie\n\nGrid służy głównie do układania elementów w dwóch wymiarach: jednocześnie w wierszach i kolumnach. Pozwala łatwo budować sekcje strony, dashboardy i bardziej złożone layouty. Najprościej: Flexbox jest bardziej „w jednej osi”, a Grid bardziej „jak siatka”.",
+    "categories": ["css"],
+    "images": [],
+    "links": []
+  },
+  {
+    "id": "media-vs-container-queries",
+    "name": "Jaka jest różnica między media queries i container queries?",
+    "description": "## Co powiedzieć na rozmowie\n\nMedia queries reagują na rozmiar viewportu, czyli całego okna lub ekranu. Container queries reagują na rozmiar konkretnego kontenera, w którym siedzi komponent. Dzięki temu container queries lepiej nadają się do komponentów wielokrotnego użytku, a media queries do ogólnego layoutu strony.",
+    "categories": ["css"],
     "images": [],
     "links": []
   }
