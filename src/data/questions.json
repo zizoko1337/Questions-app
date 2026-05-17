@@ -1214,7 +1214,7 @@
   {
     "id": "vue-reactivity-system",
     "name": "Jak dziala system reaktywnosci Vue?",
-    "description": "System reaktywnosci Vue sledzi odczyty i zapisy stanu, a potem aktualizuje tylko te fragmenty UI, ktore faktycznie zaleza od zmienionych danych. W praktyce Vue buduje zaleznosci miedzy stanem a renderem i buforuje aktualizacje, zamiast przepisywac caly widok na slepo.\n\n### Najwazniejsze punkty\n- reactivity stoi za tym, ze zmiana stanu automatycznie odswieza template\n- `ref()` i `reactive()` to podstawowe sposoby tworzenia reaktywnego stanu\n- aktualizacje DOM nie sa wykonywane natychmiast w tej samej linijce kodu\n\n### Na rozmowie\nPowiedz, ze sila Vue bierze sie z tego, ze framework wie, ktore dane sa uzywane przez dany fragment widoku.",
+    "description": "System reaktywnosci Vue sledzi odczyty i zapisy stanu, a potem aktualizuje tylko te fragmenty UI, ktore faktycznie zaleza od zmienionych danych. W Vue 3 jest to oparte glownie o `Proxy`, dzieki czemu framework moze przechwytywac dostep do pol obiektu i ich zmiany. Ważna czescia tego mechanizmu jest dependency tracking, czyli zapamietywanie, ktore dane zostaly uzyte przez render albo efekt, zeby przy zmianie odswiezyc tylko to, co naprawde trzeba.\n\n### Najwazniejsze punkty\n- reactivity stoi za tym, ze zmiana stanu automatycznie odswieza template\n- `ref()` i `reactive()` to podstawowe sposoby tworzenia reaktywnego stanu\n- aktualizacje DOM nie sa wykonywane natychmiast w tej samej linijce kodu\n\n### Na rozmowie\nPowiedz, ze sila Vue bierze sie z tego, ze framework wie, ktore dane sa uzywane przez dany fragment widoku.",
     "categories": ["vue"],
     "images": [],
     "links": [
@@ -1227,13 +1227,39 @@
   {
     "id": "vue-ref-vs-reactive",
     "name": "Kiedy uzywac ref, a kiedy reactive w Vue?",
-    "description": "`ref` najlepiej sprawdza sie dla pojedynczych wartosci i tam, gdzie chcesz jasno operowac na jednej referencji. `reactive` robi reaktywny proxy z calego obiektu i jest wygodny przy grupowaniu kilku pol razem, ale ma tez wiecej ograniczen ergonomicznych niz `ref`.\n\n### Najwazniejsze punkty\n- `ref` jest domyslnym i najbezpieczniejszym wyborem w Composition API\n- `reactive` dziala tylko dla obiektow i tablic, nie dla prymitywow\n- przy destrukturyzacji `reactive` latwo zgubic reaktywnosc, jesli zrobisz to nieostroznie\n\n### Na rozmowie\nPowiedz, ze oba API sa poprawne, ale `ref` jest czesto bardziej przewidywalny i lepiej wspolpracuje z TypeScript.",
+    "description": "`ref` najczesciej uzywamy do prymitywow, a jesli trzymasz w nim obiekt albo tablice, odwolujesz sie przez `.value`. `reactive` jest gleboko reaktywny i najlepiej nadaje sie do obiektow oraz tablic, kiedy chcesz pracowac na calej strukturze bez `.value`. `shallowRef` sledzi tylko zmiane calej referencji, a nie zagniezdzone pola, wiec przydaje sie np. dla duzych obiektow albo zewnetrznych instancji.",
     "categories": ["vue"],
     "images": [],
     "links": [
       {
         "label": "Vue Docs: Reactivity Fundamentals",
         "href": "https://vuejs.org/guide/essentials/reactivity-fundamentals.html"
+      }
+    ]
+  },
+  {
+    "id": "vue-2-vs-vue-3",
+    "name": "Czym rozni sie Vue 2 od Vue 3?",
+    "description": "Vue 3 ma nowy silnik reaktywnosci oparty o `Proxy`, lepsze wsparcie dla TypeScript i wyzsza wydajnosc. Wprowadzilo tez Composition API, `script setup`, Fragments, Teleport i Suspense, wiec daje wiecej mozliwosci organizacji kodu niz Vue 2. Vue 2 bylo prostsze i przez lata bardzo stabilne, ale dzisiaj Vue 3 jest glownym kierunkiem rozwoju i standardem w nowych projektach.",
+    "categories": ["vue"],
+    "images": [],
+    "links": [
+      {
+        "label": "Vue Docs: Migration from Vue 2",
+        "href": "https://v3-migration.vuejs.org/"
+      }
+    ]
+  },
+  {
+    "id": "vue-composition-api-vs-options-api",
+    "name": "Composition API vs Options API w Vue",
+    "description": "Options API porzadkuje komponent wedlug sekcji takich jak `data`, `methods`, `computed` i `watch`, przez co jest prostsze na start. Composition API grupuje kod wedlug logiki funkcjonalnej wewnatrz `setup`, wiec przy wiekszych komponentach i reuzywaniu logiki zwykle jest czytelniejsze. W praktyce oba podejscia sa poprawne, ale w nowych projektach Vue 3 czesciej wybiera sie Composition API.",
+    "categories": ["vue"],
+    "images": [],
+    "links": [
+      {
+        "label": "Vue Docs: Composition API FAQ",
+        "href": "https://vuejs.org/guide/extras/composition-api-faq"
       }
     ]
   },

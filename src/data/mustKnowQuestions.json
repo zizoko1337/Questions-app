@@ -42,7 +42,7 @@
   {
     "id": "prototype-chain",
     "name": "Czym jest prototype chain?",
-    "description": "## Co powiedzieć na rozmowie\n\nJavaScript dziedziczy przez prototypy. Gdy nie ma właściwości na obiekcie – silnik szuka wyżej w łańcuchu `__proto__` aż do `null`.\n\n`class` to tylko cukier składniowy na prototypach.",
+    "description": "## Co powiedzieć na rozmowie\n\nJavaScript dziedziczy przez prototypy. Gdy nie ma właściwości na obiekcie – silnik szuka wyżej w łańcuchu `__proto__` aż do `null`.\n\nSłowo `class` tylko upraszcza zapis. Pod spodem JavaScript nadal działa na prototypach.",
     "categories": ["javascript"],
     "images": [],
     "links": []
@@ -106,7 +106,7 @@
   {
     "id": "es-modules",
     "name": "ES Modules vs CommonJS",
-    "description": "## Co powiedzieć na rozmowie\n\n- **ES Modules** (`import/export`) – statyczne, hoisting, działają w przeglądarce natywnie\n- **CommonJS** (`require/module.exports`) – dynamiczne, używane w Node.js\n\nESM pozwala na tree-shaking i lepszą optymalizację bundlera.",
+    "description": "## Co powiedzieć na rozmowie\n\nOba to systemy importu i eksportu modułów w JavaScript. CommonJS to starszy system, od którego się odchodzi. ES Modules to obecny standard, natywnie wspierany zarówno w przeglądarkach, jak i w Node.js; działa asynchronicznie, pozwala używać `await` na najwyższym poziomie pliku i sprawia, że kod jest bardziej czytelny i przewidywalny.",
     "categories": ["javascript"],
     "images": [],
     "links": []
